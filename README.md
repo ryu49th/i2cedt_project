@@ -2,26 +2,6 @@
 
 A full-stack web application for project management and team collaboration
 
-## ✨ Features
-
-- Project creation and management
-- Team member assignment with skills and weakness tracking
-- RESTful API for CRUD operations
-- MongoDB database integration
-- CORS-enabled backend
-
-## 🛠 Tech Stack
-
-**Frontend:**
-- Modern JavaScript (ES6+)
-- HTML5 & CSS3
-
-**Backend:**
-- Node.js
-- Express.js
-- MongoDB with Mongoose ODM
-- CORS middleware
-
 ## 📋 Prerequisites
 
 Before running this application, make sure you have the following installed:
@@ -82,15 +62,7 @@ touch .env
 Add the following environment variables to your `.env` file:
 
 ```env
-# MongoDB Configuration
 MONGO_URI=mongodb+srv://your_username:your_password@cluster0.xxxxx.mongodb.net/your_database_name?retryWrites=true&w=majority&appName=Cluster0
-
-# Server Configuration
-PORT=3000
-NODE_ENV=development
-
-# Optional: Add other environment variables as needed
-JWT_SECRET=your_jwt_secret_here
 ```
 
 **⚠️ Important Security Notes:**
@@ -107,7 +79,6 @@ JWT_SECRET=your_jwt_secret_here
 5. Replace the placeholder values in your `.env` file
 
 ## 🎯 Running the Application
-
 
 **Terminal 1 - Backend:**
 ```bash
