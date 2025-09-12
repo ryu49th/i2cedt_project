@@ -2,18 +2,6 @@
 
 A full-stack web application for project management and team collaboration
 
-## 📋 Table of Contents
-
-- [Features](#features)
-- [Tech Stack](#tech-stack)
-- [Prerequisites](#prerequisites)
-- [Installation & Setup](#installation--setup)
-- [Environment Variables](#environment-variables)
-- [Running the Application](#running-the-application)
-- [API Endpoints](#api-endpoints)
-- [Troubleshooting](#troubleshooting)
-- [Contributing](#contributing)
-
 ## ✨ Features
 
 - Project creation and management
@@ -25,7 +13,6 @@ A full-stack web application for project management and team collaboration
 ## 🛠 Tech Stack
 
 **Frontend:**
-- React.js
 - Modern JavaScript (ES6+)
 - HTML5 & CSS3
 
@@ -136,14 +123,6 @@ npm start
 ```
 The frontend will start on `http://localhost:3001` (or next available port)
 
-### Option 2: Development with Concurrent Execution
-
-If you have `concurrently` installed, you can run both servers from the project root:
-
-```bash
-npm install -g concurrently
-concurrently "cd backend && npm start" "cd frontend && npm start"
-```
 
 ## 📁 Project Structure
 
