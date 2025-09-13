@@ -202,3 +202,29 @@ savePlanBtn.onclick = ()=>{
   state.plans.push({id: uid('plan'), title, content, createdAt: Date.now()});
   saveData(state); renderAll(); planEdit
 }
+
+// Theme color
+const toggleBtn = document.getElementById("toggleThemeBtn");
+
+toggleBtn.addEventListener("click", () => {
+  document.body.classList.toggle("light-mode");
+
+  // เปลี่ยนไอคอนปุ่ม
+  if (document.body.classList.contains("light-mode")) {
+    toggleBtn.textContent = "☀️";
+  } else {
+    toggleBtn.textContent = "🌙";
+  }
+
+  // (เสริม) เก็บค่าลง localStorage
+  localStorage.setItem("theme", document.body.classList.contains("light-mode") ? "light" : "dark");
+});
+
+// โหลดค่าธีมจาก localStorage
+window.addEventListener("DOMContentLoaded", () => {
+  const savedTheme = localStorage.getItem("theme");
+  if (savedTheme === "light") {
+    document.body.classList.add("light-mode");
+    toggleBtn.textContent = "☀️";
+  }
+});

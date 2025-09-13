@@ -58,3 +58,86 @@ label { font-size: 13px; display: block; margin: 6px 0; }
 .plan-area { white-space: pre-wrap; background: rgba(0,0,0,0.25); padding: 12px; border-radius: 8px; margin-top: 8px; }
 
 footer { margin-top: 12px; color: var(--muted); font-size: 13px; }
+
+/* responsive layout */
+@media (max-width: 900px) {
+  .grid.cols-3 {
+    grid-template-columns: 1fr; /* แถวเดียว */
+  }
+
+  .card {
+    margin-bottom: 16px;
+  }
+
+  header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  header h1 {
+    font-size: 18px;
+  }
+}
+
+@media (max-width: 600px) {
+  body {
+    font-size: 15px;
+  }
+
+  .logo {
+    width: 40px;
+    height: 40px;
+    font-size: 16px;
+  }
+
+  button {
+    width: 100%; /* ปุ่มเต็มแถว */
+    margin-top: 6px;
+  }
+
+  .btn-group {
+    display: flex;
+    flex-direction: column;
+  }
+
+  input, textarea {
+    font-size: 14px;
+  }
+}
+
+/* Theme color */
+/* ปุ่มธีม */
+.theme-btn {
+  margin-left: auto;
+  background: transparent;
+  border: 1px solid rgba(255,255,255,0.2);
+  color: inherit;
+  padding: 6px 10px;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 18px;
+  transition: 0.3s;
+}
+.theme-btn:hover {
+  background: rgba(255,255,255,0.1);
+}
+
+/* โหมดสว่าง */
+body.light-mode {
+  --bg: #f9fafb;
+  --card: #ffffff;
+  --muted: #4b5563;
+  color: #1f2937;
+  background: linear-gradient(180deg,#f9fafb 0%, #e5e7eb 100%);
+}
+
+body.light-mode .card {
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+}
+
+body.light-mode .logo {
+  background: linear-gradient(90deg,#6366f1,#0ea5e9);
+  color: white;
+}
+
