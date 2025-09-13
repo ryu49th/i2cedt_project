@@ -14,9 +14,20 @@ body {
 }
 
 .container { max-width: 1100px; margin: 24px auto; padding: 16px; }
-header { display: flex; align-items: center; gap: 16px; margin-bottom: 18px; }
+header { 
+  display: flex; 
+  flex-direction: column;
+  align-items: start; 
+  gap: 16px; 
+  margin-bottom: 18px; 
+}
+.header-container{
+  display: flex;
+  flex-direction: row;
+}
 header h1 { font-size: 20px; margin: 0; }
-.logo { width:48px;height:48px;background:linear-gradient(90deg,#4f46e5,#06b6d4);border-radius:10px;display:flex;align-items:center;justify-content:center;font-weight:700 }
+.logo { margin: 0 1rem;
+  width:48px;height:48px;background:linear-gradient(180deg,#ffffff5e);border-radius:8px;display:flex;align-items:center;justify-content:center;font-weight:700 }
 
 .grid { display: grid; gap: 12px; }
 .cols-3 { grid-template-columns: 280px 1fr 360px; }
@@ -60,8 +71,10 @@ button:hover {
 
 button.danger { 
   user-select: none;
-  background: #ed5358; 
-}  /*<-- สีปุ่ม */
+  color: #ed5358;
+  background: #ffffff;
+  border:2px solid #ed5358;
+}
 
 input, textarea {
   width: 100%;
@@ -92,6 +105,7 @@ footer { margin-top: 12px; color: var(--muted); font-size: 13px; }
   }
 
   header {
+    display: flex;
     flex-direction: column;
     align-items: flex-start;
   }
@@ -99,9 +113,25 @@ footer { margin-top: 12px; color: var(--muted); font-size: 13px; }
   header h1 {
     font-size: 18px;
   }
+  .textarea-sm{
+    max-width: 90%;
+    max-height: 200px;
+  }
+  .textbox{
+    width: 90%;
+  }
+}
+.plan-area{
+  background: linear-gradient(180deg, rgba(92, 104, 141, 0.8) 100%, rgba(0, 23, 116, 0.8) 0%);  /* <-- บรรทัดนี้ */
 }
 
 @media (max-width: 600px) {
+
+  #toggleThemeBtn{
+    border-radius: 25px;
+    max-width: 50px;
+  }
+
   body {
     font-size: 15px;
   }
@@ -125,7 +155,21 @@ footer { margin-top: 12px; color: var(--muted); font-size: 13px; }
   input, textarea {
     font-size: 14px;
   }
+  .textarea-sm{
+    max-width: 90%;
+    max-height: 200px;
+  }
+  .textbox{
+    width: 90%;
+  }
 }
+.textarea-sm{
+    max-width: 90%;
+    max-height: 200px;
+  }
+  .textbox{
+    width: 90%;
+  }
 
 /* Theme color */
 /* ปุ่มธีม */
@@ -162,7 +206,9 @@ body.light-mode .logo {
   background: linear-gradient(90deg,#6366f1,#0ea5e9);
   color: white;
 }
-
+body.light-mode .plan-area{
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.896) 0%, rgba(198, 203, 227, 0.8) 100%);  /* <-- บรรทัดนี้ */
+}
 .icon {
   width: 30px;
   height: 30px;
