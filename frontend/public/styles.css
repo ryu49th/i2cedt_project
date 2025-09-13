@@ -143,7 +143,7 @@ footer { margin-top: 12px; color: var(--muted); font-size: 13px; }
 .theme-btn:hover {
   background: rgba(255,255,255,0.1);
 }
-
+/* สา่้เดกแ */
 /* โหมดสว่าง */
 body.light-mode {
   --bg: #f9fafb;
