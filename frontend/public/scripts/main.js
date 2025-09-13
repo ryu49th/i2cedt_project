@@ -66,7 +66,7 @@ function renderProjects() {
     const right = el('div',{class:'actions'});
     const open = el('button',{},'Open'); 
     open.style.background='#446aff'; 
-    open.onclick=()=>{ openProject(p.id)}
+    open.onclick=()=>{ openProject(p._id)}
     const del = el('button',{},'Delete'); 
     del.classList.add('danger');
     del.onclick = async () => {
