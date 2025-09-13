@@ -3,6 +3,8 @@ const express = require('express');
 const cors = require('cors');
 const mongoose = require('mongoose');
 
+const aiRoutes = require('./routes/aiRoutes');
+
 const projectRoutes = require('./routes/projectRoutes');
 
 const app = express();
@@ -12,6 +14,7 @@ const PORT = process.env.PORT || 3000;
 app.use(cors());
 app.use(express.json());
 
+app.use('/api', aiRoutes);
 // DB connect
 mongoose.connect(process.env.MONGO_URI)
   .then(() => console.log("✅ MongoDB connected"))

@@ -259,32 +259,104 @@ function editMember(memberId){
 
 
 // ======================
-// AI Plan
+// AI Plan with Better Error Handling
 // ======================
 generatePlanBtn.onclick = async () => {
   if(!currentProjectId) return alert('เลือกโปรเจกต์ก่อน');
   const p = state.projects.find(x => x._id === currentProjectId);
-  aiSuggestion.textContent = 'กำลังสร้างแผน...';
+  
+  // Check if project has members
+  if(!p.members || p.members.length === 0) {
+    aiSuggestion.textContent = 'กรุณาเพิ่มสมาชิกในโปรเจกต์ก่อนสร้างแผน';
+    return;
+  }
+  
+  aiSuggestion.textContent = 'กำลังสร้างแผนด้วย AI... (อาจใช้เวลา 10-30 วินาที)';
   const prompt = buildPrompt(p);
+  
   try {
-    const resp = await fetch('/api/generate', {
+    console.log('Sending AI request...');
+    console.log('Prompt:', prompt);
+    
+    const resp = await fetch('http://localhost:3000/api/generate', {
       method:'POST', 
-      headers:{ 'Content-Type':'application/json' }, 
+      headers:{ 
+        'Content-Type':'application/json',
+        'Accept': 'application/json'
+      }, 
       body: JSON.stringify({prompt})
     });
-    const json = await resp.json();
-    aiSuggestion.textContent = json.plan || json.text || 'ไม่มีผลลัพธ์จาก API';
-  } catch {
-    aiSuggestion.textContent = mockGeneratePlan(p);
+    
+    console.log('Response status:', resp.status);
+    console.log('Response headers:', [...resp.headers.entries()]);
+    
+    const responseText = await resp.text();
+    console.log('Raw response:', responseText);
+    
+    if (!resp.ok) {
+      let errorMessage = `HTTP ${resp.status}`;
+      try {
+        const errorJson = JSON.parse(responseText);
+        errorMessage = errorJson.error || errorMessage;
+        console.log('Error details:', errorJson);
+      } catch (e) {
+        console.log('Could not parse error as JSON');
+      }
+      throw new Error(errorMessage);
+    }
+    
+    const json = JSON.parse(responseText);
+    
+    if (json.plan) {
+      aiSuggestion.innerHTML = `<div style="white-space: pre-wrap; font-family: inherit;">${escapeHtml(json.plan)}</div>`;
+    } else {
+      aiSuggestion.textContent = 'ไม่มีผลลัพธ์จาก AI';
+    }
+    
+  } catch (error) {
+    console.error('AI generation error:', error);
+    
+    // More detailed error messages
+    let errorMsg = 'เกิดข้อผิดพลาดในการสร้างแผน: ';
+    
+    if (error.message.includes('Failed to fetch')) {
+      errorMsg += 'ไม่สามารถเชื่อมต่อกับ server ได้ (ตรวจสอบว่า backend server กำลังทำงานอยู่)';
+    } else if (error.message.includes('quota')) {
+      errorMsg += 'OpenAI API quota หมด - ตรวจสอบ billing';
+    } else if (error.message.includes('API key')) {
+      errorMsg += 'OpenAI API key ไม่ถูกต้อง';
+    } else {
+      errorMsg += error.message;
+    }
+    
+    aiSuggestion.innerHTML = `<div style="color: #ff6b6b; padding: 10px; background: rgba(255,107,107,0.1); border-radius: 4px;">${errorMsg}</div>`;
   }
 };
 
+// Enhanced prompt building with better formatting
 function buildPrompt(project){
-  let s = `Project: ${project.name}\nDescription: ${project.desc || ''}\nMembers:\n`;
-  (project.members||[]).forEach(m=>{
-    s += `- ${m.name}: skills=${(m.skills||[]).join(',')}; weaknesses=${(m.weakness||[]).join(',')}\n`;
+  let s = `สร้างแผนการทำงานสำหรับโปรเจกต์:\n\n`;
+  s += `ชื่อโปรเจกต์: ${project.name}\n`;
+  s += `รายละเอียด: ${project.desc || 'ไม่มีรายละเอียดเพิ่มเติม'}\n\n`;
+  s += `สมาชิกในทีม (${project.members.length} คน):\n`;
+  
+  project.members.forEach((m, index) => {
+    s += `${index + 1}. ${m.name}\n`;
+    s += `   จุดแข็ง: ${(m.skills && m.skills.length > 0) ? m.skills.join(', ') : 'ไม่ระบุ'}\n`;
+    s += `   จุดอย่อน: ${(m.weakness && m.weakness.length > 0) ? m.weakness.join(', ') : 'ไม่ระบุ'}\n\n`;
   });
-  s += '\nInstructions: Suggest a clear division of tasks for each member, give short reasons, and list the things each person should focus on or avoid. Provide a simple 3-step timeline.';
+  
+  s += `กรุณาสร้างแผนการทำงานที่:\n`;
+  s += `1. แบ่งหน้าที่ให้แต่ละคนตามจุดแข็ง\n`;
+  s += `2. หลีกเลี่ยงงานที่ตรงกับจุดอ่อนของแต่ละคน\n`;
+  s += `3. มีไทม์ไลน์ชัดเจน 3-5 ขั้นตอน\n`;
+  s += `4. อธิบายเหตุผลในการแบ่งงาน\n`;
+  s += `5. ตอบเป็นภาษาไทย\n\n`;
+  s += `รูปแบบที่ต้องการ:\n`;
+  s += `- การแบ่งหน้าที่แต่ละคน\n`;
+  s += `- ไทม์ไลน์การทำงาน\n`;
+  s += `- ข้อแนะนำเพิ่มเติม`;
+  
   return s;
 }
 
@@ -350,6 +422,20 @@ toggleBtn.addEventListener("click", () => {
   // (เสริม) เก็บค่าลง localStorage
   localStorage.setItem("theme", isLightMode ? "light" : "dark");
 });
+
+clearStorageBtn.onclick = async () => {
+  if (!confirm("ลบโปรเจกต์ทั้งหมดจริงหรือ?")) return;
+  try {
+    await fetch("http://localhost:3000/api/projects", { method: "DELETE" });
+    state.projects = [];
+    state.plans = [];
+    currentProjectId = null;
+    renderAll();
+  } catch (err) {
+    alert("Error clearing all projects: " + err.message);
+  }
+};
+
 
 // โหลดค่าธีมจาก localStorage
 window.addEventListener("DOMContentLoaded", () => {

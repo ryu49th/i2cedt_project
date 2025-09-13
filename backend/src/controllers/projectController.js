@@ -43,6 +43,16 @@ exports.deleteProject = async (req, res) => {
   }
 };
 
+exports.deleteAllProjects = async (req, res) => {
+  try {
+    await Project.deleteMany({});
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
+
 // ADD MEMBER
 exports.addMember = async (req, res) => {
   try {
