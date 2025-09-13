@@ -196,13 +196,25 @@ body.light-mode {
   color: #000000;
   background: linear-gradient(180deg,#8fc7ff 0%, #e5e7eb 100%); /* <-- บรรทัดนี้ */
 }
+body.light-mode #projectName{
+  border-color: #9b9eae;
+}
+body.light-mode #planEdit{
+  border-color: #9b9eae;
+}
+body.light-mode #projectDesc{
+  border-color: #9b9eae;
+}
+body.light-mode .textbox{
+  border-color: #9b9eae;
+}
 
 body.light-mode .card {
   background: linear-gradient(180deg, rgba(255, 255, 255, 0.896) 0%, rgba(198, 203, 227, 0.8) 100%);  /* <-- บรรทัดนี้ */
   border: 1px solid #e5e7eb;
 }
 
-body.light-mode .logo {
+.logo {
   background: linear-gradient(90deg,#6366f1,#0ea5e9);
   color: white;
 }

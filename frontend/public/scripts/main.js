@@ -50,7 +50,7 @@ function renderProjects(){
     left.innerHTML = `<div style="font-weight:600">${escapeHtml(p.name)}</div><div class='muted small'>${escapeHtml(p.desc||'')}</div>`;
     const right = el('div',{class:'actions'});
     const open = el('button',{},'Open'); 
-    open.style.background='rgba(255,255,255,0.04)'; 
+    open.style.background='#446aff'; 
     open.onclick=()=>{ openProject(p.id)}
     const del = el('button',{},'Delete'); 
     del.classList.add('danger');
@@ -84,6 +84,7 @@ function renderProjectDetail(){
     const right = el('div',{class:'actions'});
     const edit = el('button',{},'Edit'); 
     edit.onclick=()=>{ editMember(m.id)}
+    edit.style.background='#446aff'; 
     const del = el('button',{},'Remove'); 
     del.classList.add('danger');
     del.onclick=()=>{ if(confirm('ลบสมาชิก?')){ p.members = p.members.filter(x=>x.id!==m.id); saveData(state); renderAll(); }}
@@ -101,6 +102,7 @@ function renderPlans(){
     const right = el('div',{class:'actions'});
     const view = el('button',{},'View'); 
     view.onclick=()=>{ planEdit.value = pl.content; }
+    view.style.background='#446aff';
     const del = el('button',{},'Delete'); 
     del.classList.add('danger');
     del.onclick=()=>{ if(confirm('ลบแผน?')){ state.plans = state.plans.filter(x=>x.id!==pl.id); saveData(state); renderAll(); }}
