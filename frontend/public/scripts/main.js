@@ -203,28 +203,51 @@ savePlanBtn.onclick = ()=>{
   saveData(state); renderAll(); planEdit
 }
 
-// Theme color
+// DOM refs สำหรับ icons
+const projectIcon = document.getElementById('projectIcon');
+const memberIcon = document.getElementById('memberIcon');
+const planIcon = document.getElementById('planIcon');
+
+// ฟังก์ชันสำหรับสลับไอคอน
+function updateIcons(isLightMode) {
+  if (isLightMode) {
+    projectIcon.src = "/icons/project.png";
+    memberIcon.src = "/icons/member.png";
+    planIcon.src = "/icons/plan.png";
+  } else {
+    projectIcon.src = "/icons/projectw.png";
+    memberIcon.src = "/icons/memberw.png";
+    planIcon.src = "/icons/planw.png";
+  }
+}
+
+// โค้ดเดิมสำหรับสลับธีม
 const toggleBtn = document.getElementById("toggleThemeBtn");
 
 toggleBtn.addEventListener("click", () => {
   document.body.classList.toggle("light-mode");
+  const isLightMode = document.body.classList.contains("light-mode");
 
   // เปลี่ยนไอคอนปุ่ม
-  if (document.body.classList.contains("light-mode")) {
-    toggleBtn.textContent = "☀️";
-  } else {
-    toggleBtn.textContent = "🌙";
-  }
+  toggleBtn.textContent = isLightMode ? "☀️" : "🌙";
+
+  // เรียกฟังก์ชันเปลี่ยนไอคอนรูปภาพ
+  updateIcons(isLightMode);
 
   // (เสริม) เก็บค่าลง localStorage
-  localStorage.setItem("theme", document.body.classList.contains("light-mode") ? "light" : "dark");
+  localStorage.setItem("theme", isLightMode ? "light" : "dark");
 });
 
 // โหลดค่าธีมจาก localStorage
 window.addEventListener("DOMContentLoaded", () => {
   const savedTheme = localStorage.getItem("theme");
-  if (savedTheme === "light") {
+  const isLightMode = savedTheme === "light";
+
+  if (isLightMode) {
     document.body.classList.add("light-mode");
     toggleBtn.textContent = "☀️";
   }
+
+  // เรียกฟังก์ชันเปลี่ยนไอคอนเมื่อหน้าเว็บโหลด
+  updateIcons(isLightMode);
 });

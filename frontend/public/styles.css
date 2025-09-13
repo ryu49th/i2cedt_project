@@ -8,7 +8,7 @@
 body {
   font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto;
   margin: 0;
-  background: linear-gradient(180deg,#071033 0%, #09122a 100%);
+  background: linear-gradient(180deg,#040b28 0%, #5c688d 100%); /* <-- บรรทัดนี้ */
   color: #e6eef8;
   min-height: 100vh;
 }
@@ -22,24 +22,46 @@ header h1 { font-size: 20px; margin: 0; }
 .cols-3 { grid-template-columns: 280px 1fr 360px; }
 
 .card {
-  background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
-  border: 1px solid rgba(255,255,255,0.03);
+  background: linear-gradient(180deg, rgba(0, 23, 116, 0.8) 0%, rgba(92, 104, 141, 0.8) 100%);  /* <-- บรรทัดนี้ */
+  border: 1px solid rgba(255,255,255,0.03); /* <-- บรรทัดนี้ */
   padding: 12px;
   border-radius: 12px;
 }
 
 button {
-  background: var(--accent);
   border: none;
   color: white;
   padding: 8px 12px;
-  border-radius: 8px;
+  border-radius: 12px; /* <-- เพิ่มความโค้งมน */
   cursor: pointer;
+  font-weight: 600; 
+  box-shadow: 0 4px 14px 0 rgba(0, 0, 0, 0.1); /* <-- เพิ่มเงา */
+  transition: transform 0.2s, box-shadow 0.2s; /* <-- ทำให้ hover สมูท */
 }
 
-button.danger { background: #ef4444; }
-button.info { background: #06b6d4; }
-button.success { background: #10b981; }
+.botton1{
+  user-select: none;
+  color: blue;
+  background: #ffffff;
+  border:2px solid #4840d0;
+}
+.botton2{
+  user-select: none;
+  color: #ffffff;
+  background: #446aff;
+  /* border:2px solid #4840d0; */
+}
+
+/* --- เพิ่มโค้ดส่วนนี้เข้าไปใต้ button --- */
+button:hover {
+  transform: translateY(-2px); /* <-- ทำให้ปุ่มลอยขึ้นเล็กน้อย */
+  box-shadow: 0 6px 20px 0 rgba(0, 0, 0, 0.185); /* <-- เพิ่มเงาตอน hover */
+}
+
+button.danger { 
+  user-select: none;
+  background: #ed5358; 
+}  /*<-- สีปุ่ม */
 
 input, textarea {
   width: 100%;
@@ -127,12 +149,12 @@ body.light-mode {
   --bg: #f9fafb;
   --card: #ffffff;
   --muted: #4b5563;
-  color: #1f2937;
-  background: linear-gradient(180deg,#f9fafb 0%, #e5e7eb 100%);
+  color: #000000;
+  background: linear-gradient(180deg,#8fc7ff 0%, #e5e7eb 100%); /* <-- บรรทัดนี้ */
 }
 
 body.light-mode .card {
-  background: #ffffff;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.896) 0%, rgba(198, 203, 227, 0.8) 100%);  /* <-- บรรทัดนี้ */
   border: 1px solid #e5e7eb;
 }
 
@@ -141,3 +163,9 @@ body.light-mode .logo {
   color: white;
 }
 
+.icon {
+  width: 30px;
+  height: 30px;
+  margin-right: 6px;
+  vertical-align: middle;
+}
