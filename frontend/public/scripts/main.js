@@ -62,15 +62,12 @@ function renderProjects() {
   state.projects.forEach(p => {
     const wrap = el('div', { class:'item' });
     const left = el('div');
-    left.innerHTML = `<div style="font-weight:600">${escapeHtml(p.name)}</div>
-                      <div class='muted small'>${escapeHtml(p.desc||'')}</div>`;
-    
-    const right = el('div', { class:'actions' });
-    const open = el('button', {}, 'Open');
-    open.style.background='rgba(255,255,255,0.04)';
-    open.onclick = () => openProject(p._id);
-    
-    const del = el('button', {}, 'Delete');
+    left.innerHTML = `<div style="font-weight:600">${escapeHtml(p.name)}</div><div class='muted small'>${escapeHtml(p.desc||'')}</div>`;
+    const right = el('div',{class:'actions'});
+    const open = el('button',{},'Open'); 
+    open.style.background='#446aff'; 
+    open.onclick=()=>{ openProject(p.id)}
+    const del = el('button',{},'Delete'); 
     del.classList.add('danger');
     del.onclick = async () => {
       if(!confirm('ลบโปรเจกต์?')) return;
@@ -116,6 +113,7 @@ function renderProjectDetail() {
     const edit = el('button', {}, 'Edit');
     edit.onclick = () => editMember(m._id);
     
+    edit.style.background='#446aff'; 
     const del = el('button', {}, 'Remove');
     del.classList.add('danger');
     del.onclick = async () => {
@@ -143,6 +141,7 @@ function renderPlans() {
     const right = el('div', { class:'actions' });
     const view = el('button', {}, 'View');
     view.onclick = () => { planEdit.value = pl.content; };
+    view.style.background='#446aff';
     const del = el('button', {}, 'Delete');
     del.classList.add('danger');
     del.onclick = () => {
@@ -315,3 +314,53 @@ savePlanBtn.onclick = () => {
 // Init
 // ======================
 document.addEventListener('DOMContentLoaded', fetchProjects);
+
+
+// DOM refs สำหรับ icons
+const projectIcon = document.getElementById('projectIcon');
+const memberIcon = document.getElementById('memberIcon');
+const planIcon = document.getElementById('planIcon');
+
+// ฟังก์ชันสำหรับสลับไอคอน
+function updateIcons(isLightMode) {
+  if (isLightMode) {
+    projectIcon.src = "/icons/project.png";
+    memberIcon.src = "/icons/member.png";
+    planIcon.src = "/icons/plan.png";
+  } else {
+    projectIcon.src = "/icons/projectw.png";
+    memberIcon.src = "/icons/memberw.png";
+    planIcon.src = "/icons/planw.png";
+  }
+}
+
+// โค้ดเดิมสำหรับสลับธีม
+const toggleBtn = document.getElementById("toggleThemeBtn");
+
+toggleBtn.addEventListener("click", () => {
+  document.body.classList.toggle("light-mode");
+  const isLightMode = document.body.classList.contains("light-mode");
+
+  // เปลี่ยนไอคอนปุ่ม
+  toggleBtn.textContent = isLightMode ? "☀️" : "🌙";
+
+  // เรียกฟังก์ชันเปลี่ยนไอคอนรูปภาพ
+  updateIcons(isLightMode);
+
+  // (เสริม) เก็บค่าลง localStorage
+  localStorage.setItem("theme", isLightMode ? "light" : "dark");
+});
+
+// โหลดค่าธีมจาก localStorage
+window.addEventListener("DOMContentLoaded", () => {
+  const savedTheme = localStorage.getItem("theme");
+  const isLightMode = savedTheme === "light";
+
+  if (isLightMode) {
+    document.body.classList.add("light-mode");
+    toggleBtn.textContent = "☀️";
+  }
+
+  // เรียกฟังก์ชันเปลี่ยนไอคอนเมื่อหน้าเว็บโหลด
+  updateIcons(isLightMode);
+});

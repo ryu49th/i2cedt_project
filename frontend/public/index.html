@@ -3,30 +3,35 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>TaskWeaver — AI Team Work Planner</title>
+  <title>WorkSync — AI Team Work Planner</title>
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
   <div class="container">
     <header>
-      <div class="logo">TW</div>
+      <button id="toggleThemeBtn" class="theme-btn">🌙</button>
+      <div class="header-container">
+      <img id="WS" src="/icons/logo.png" alt="w_S" class="logo" />
       <div>
-        <h1>TaskWeaver — AI Team Work Planner</h1>
+        <h1>WorkSync — AI Team Work Planner</h1>
         <div class="muted">สร้างแผนแบ่งงานให้ทีมของคุณ โดยใช้ข้อมูล skill/weakness และ AI ช่วยแนะนำ</div>
+      </div>
       </div>
     </header>
 
     <main class="grid cols-3">
       <!-- Projects -->
       <section class="card">
-        <h3>Projects</h3>
+        <h3>
+        <img id="projectIcon" src="/icons/projectw.png" alt="Projects" class="icon" />
+        Projects</h3>
         <div class="form">
           <label for="projectName">ชื่อโปรเจกต์</label>
-          <input id="projectName" placeholder="เช่น Web App ร้านอาหาร" />
+          <input id="projectName" class="textbox" placeholder="เช่น Web App ร้านอาหาร" />
           <label for="projectDesc">คำอธิบาย</label>
           <textarea id="projectDesc" class="textarea-sm" placeholder="รายละเอียดคร่าวๆ ของโปรเจกต์"></textarea>
           <div class="btn-group">
-            <button id="createProjectBtn">Create</button>
+            <button id="createProjectBtn" class="botton2">Create</button>
             <button id="clearStorageBtn" class="danger">Clear All</button>
           </div>
         </div>
@@ -46,16 +51,18 @@
         <hr>
         <div class="form">
           <label>เพิ่มสมาชิก</label>
-          <input id="memberName" placeholder="ชื่อ (เช่น สมชาย)" />
-          <input id="memberSkills" placeholder="ความถนัด เช่น frontend, react" />
-          <input id="memberWeakness" placeholder="สิ่งที่ไม่ถนัด เช่น db, ui" />
+          <input id="memberName" class="textbox" placeholder="ชื่อ (เช่น สมชาย)" />
+          <input id="memberSkills" class="textbox" placeholder="ความถนัด เช่น frontend, react" />
+          <input id="memberWeakness" class="textbox" placeholder="สิ่งที่ไม่ถนัด เช่น db, ui" />
           <div class="btn-group">
-            <button id="addMemberBtn">Add member</button>
-            <button id="generatePlanBtn" class="info">Generate Plan (AI)</button>
+            <button id="generatePlanBtn" class="botton2">Generate Plan (AI)</button>
+            <button id="addMemberBtn" class =botton1>Add member</button>
           </div>
         </div>
 
-        <h4>สมาชิก</h4>
+        <h4>
+          <img id="memberIcon" src="/icons/memberw.png" alt="Members" class="icon" />
+          สมาชิก</h4>
         <div id="membersList" class="list"></div>
 
         <h4>AI Suggestion</h4>
@@ -64,14 +71,16 @@
 
       <!-- Saved Plans -->
       <section class="card">
-        <h3>Saved Plans</h3>
+        <h3>
+          <img id="planIcon" src="/icons/planw.png" alt="Plans" class="icon" />
+          Saved Plans</h3>
         <div id="plansList" class="list"></div>
         <hr>
         <h4>Preview / Edit</h4>
         <textarea id="planEdit" class="textarea-sm" placeholder="แก้ไขแผนได้ที่นี่"></textarea>
         <div class="btn-group">
-          <button id="savePlanBtn">Save Plan</button>
-          <button id="applyPlanBtn" class="success">Apply to project</button>
+          <button id="applyPlanBtn" class =botton2>Apply to project</button>
+          <button id="savePlanBtn" class =botton1>Save Plan</button>
         </div>
         <footer>
           <div>Frontend: vanilla HTML/CSS/JS</div>

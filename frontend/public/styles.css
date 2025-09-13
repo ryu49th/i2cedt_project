@@ -8,38 +8,73 @@
 body {
   font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto;
   margin: 0;
-  background: linear-gradient(180deg,#071033 0%, #09122a 100%);
+  background: linear-gradient(180deg,#040b28 0%, #5c688d 100%); /* <-- บรรทัดนี้ */
   color: #e6eef8;
   min-height: 100vh;
 }
 
 .container { max-width: 1100px; margin: 24px auto; padding: 16px; }
-header { display: flex; align-items: center; gap: 16px; margin-bottom: 18px; }
+header { 
+  display: flex; 
+  flex-direction: column;
+  align-items: start; 
+  gap: 16px; 
+  margin-bottom: 18px; 
+}
+.header-container{
+  display: flex;
+  flex-direction: row;
+}
 header h1 { font-size: 20px; margin: 0; }
-.logo { width:48px;height:48px;background:linear-gradient(90deg,#4f46e5,#06b6d4);border-radius:10px;display:flex;align-items:center;justify-content:center;font-weight:700 }
+.logo { margin: 0 1rem;
+  width:48px;height:48px;background:linear-gradient(180deg,#ffffff5e);border-radius:8px;display:flex;align-items:center;justify-content:center;font-weight:700 }
 
 .grid { display: grid; gap: 12px; }
 .cols-3 { grid-template-columns: 280px 1fr 360px; }
 
 .card {
-  background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
-  border: 1px solid rgba(255,255,255,0.03);
+  background: linear-gradient(180deg, rgba(0, 23, 116, 0.8) 0%, rgba(92, 104, 141, 0.8) 100%);  /* <-- บรรทัดนี้ */
+  border: 1px solid rgba(255,255,255,0.03); /* <-- บรรทัดนี้ */
   padding: 12px;
   border-radius: 12px;
 }
 
 button {
-  background: var(--accent);
   border: none;
   color: white;
   padding: 8px 12px;
-  border-radius: 8px;
+  border-radius: 12px; /* <-- เพิ่มความโค้งมน */
   cursor: pointer;
+  font-weight: 600; 
+  box-shadow: 0 4px 14px 0 rgba(0, 0, 0, 0.1); /* <-- เพิ่มเงา */
+  transition: transform 0.2s, box-shadow 0.2s; /* <-- ทำให้ hover สมูท */
 }
 
-button.danger { background: #ef4444; }
-button.info { background: #06b6d4; }
-button.success { background: #10b981; }
+.botton1{
+  user-select: none;
+  color: blue;
+  background: #ffffff;
+  border:2px solid #4840d0;
+}
+.botton2{
+  user-select: none;
+  color: #ffffff;
+  background: #446aff;
+  /* border:2px solid #4840d0; */
+}
+
+/* --- เพิ่มโค้ดส่วนนี้เข้าไปใต้ button --- */
+button:hover {
+  transform: translateY(-2px); /* <-- ทำให้ปุ่มลอยขึ้นเล็กน้อย */
+  box-shadow: 0 6px 20px 0 rgba(0, 0, 0, 0.185); /* <-- เพิ่มเงาตอน hover */
+}
+
+button.danger { 
+  user-select: none;
+  color: #ed5358;
+  background: #ffffff;
+  border:2px solid #ed5358;
+}
 
 input, textarea {
   width: 100%;
@@ -58,3 +93,137 @@ label { font-size: 13px; display: block; margin: 6px 0; }
 .plan-area { white-space: pre-wrap; background: rgba(0,0,0,0.25); padding: 12px; border-radius: 8px; margin-top: 8px; }
 
 footer { margin-top: 12px; color: var(--muted); font-size: 13px; }
+
+/* responsive layout */
+@media (max-width: 900px) {
+  .grid.cols-3 {
+    grid-template-columns: 1fr; /* แถวเดียว */
+  }
+
+  .card {
+    margin-bottom: 16px;
+  }
+
+  header {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  header h1 {
+    font-size: 18px;
+  }
+  .textarea-sm{
+    max-width: 90%;
+    max-height: 200px;
+  }
+  .textbox{
+    width: 90%;
+  }
+}
+.plan-area{
+  background: linear-gradient(180deg, rgba(92, 104, 141, 0.8) 100%, rgba(0, 23, 116, 0.8) 0%);  /* <-- บรรทัดนี้ */
+}
+
+@media (max-width: 600px) {
+
+  #toggleThemeBtn{
+    border-radius: 25px;
+    max-width: 50px;
+  }
+
+  body {
+    font-size: 15px;
+  }
+
+  .logo {
+    width: 40px;
+    height: 40px;
+    font-size: 16px;
+  }
+
+  button {
+    width: 100%; /* ปุ่มเต็มแถว */
+    margin-top: 6px;
+  }
+
+  .btn-group {
+    display: flex;
+    flex-direction: column;
+  }
+
+  input, textarea {
+    font-size: 14px;
+  }
+  .textarea-sm{
+    max-width: 90%;
+    max-height: 200px;
+  }
+  .textbox{
+    width: 90%;
+  }
+}
+.textarea-sm{
+    max-width: 90%;
+    max-height: 200px;
+  }
+  .textbox{
+    width: 90%;
+  }
+
+/* Theme color */
+/* ปุ่มธีม */
+.theme-btn {
+  margin-left: auto;
+  background: transparent;
+  border: 1px solid rgba(255,255,255,0.2);
+  color: inherit;
+  padding: 6px 10px;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 18px;
+  transition: 0.3s;
+}
+.theme-btn:hover {
+  background: rgba(255,255,255,0.1);
+}
+
+/* โหมดสว่าง */
+body.light-mode {
+  --bg: #f9fafb;
+  --card: #ffffff;
+  --muted: #4b5563;
+  color: #000000;
+  background: linear-gradient(180deg,#8fc7ff 0%, #e5e7eb 100%); /* <-- บรรทัดนี้ */
+}
+body.light-mode #projectName{
+  border-color: #9b9eae;
+}
+body.light-mode #planEdit{
+  border-color: #9b9eae;
+}
+body.light-mode #projectDesc{
+  border-color: #9b9eae;
+}
+body.light-mode .textbox{
+  border-color: #9b9eae;
+}
+
+body.light-mode .card {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.896) 0%, rgba(198, 203, 227, 0.8) 100%);  /* <-- บรรทัดนี้ */
+  border: 1px solid #e5e7eb;
+}
+
+.logo {
+  background: linear-gradient(90deg,#6366f1,#0ea5e9);
+  color: white;
+}
+body.light-mode .plan-area{
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.896) 0%, rgba(198, 203, 227, 0.8) 100%);  /* <-- บรรทัดนี้ */
+}
+.icon {
+  width: 30px;
+  height: 30px;
+  margin-right: 6px;
+  vertical-align: middle;
+}
