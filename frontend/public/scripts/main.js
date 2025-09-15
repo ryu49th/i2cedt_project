@@ -46,15 +46,25 @@ function renderProjects(){
   projectsList.innerHTML='';
   state.projects.forEach(p=>{
     const wrap = el('div',{class:'item'});
-    const left = el('div');
-    left.innerHTML = `<div style="font-weight:600">${escapeHtml(p.name)}</div><div class='muted small'>${escapeHtml(p.desc||'')}</div>`;
+    const left = el('div', {class: 'left'}); 
+    const MAX_NAME_LENGTH = 8;
+    let shortName = escapeHtml(p.name || '');
+    if (shortName.length > MAX_NAME_LENGTH) {
+      shortName = shortName.slice(0, MAX_NAME_LENGTH) + '...';
+    }
+    const MAX_DESC_LENGTH = 8; 
+    let shortDesc = escapeHtml(p.desc || '');
+    if (shortDesc.length > MAX_DESC_LENGTH) {
+      shortDesc = shortDesc.slice(0, MAX_DESC_LENGTH) + '...';
+    }
+    left.innerHTML = `<div style="font-weight:600">${shortName}</div><div class='muted small'>${shortDesc}</div>`;
     const right = el('div',{class:'actions'});
     const open = el('button',{},'Open'); 
     open.style.background='#446aff'; 
     open.onclick=()=>{ openProject(p.id)}
     const del = el('button',{},'Delete'); 
     del.classList.add('danger');
-    del.onclick=()=>{ if(confirm('ลบโปรเจกต์?')){ state.projects = state.projects.filter(x=>x.id!==p.id); if(currentProjectId===p.id) currentProjectId=null; saveData(state); renderAll(); }}
+    del.onclick=()=>{ if(confirm('Delete project?')){ state.projects = state.projects.filter(x=>x.id!==p.id); if(currentProjectId===p.id) currentProjectId=null; saveData(state); renderAll(); }}
     right.appendChild(open); right.appendChild(del);
     wrap.appendChild(left); wrap.appendChild(right);
     projectsList.appendChild(wrap);
@@ -63,18 +73,18 @@ function renderProjects(){
 
 function renderProjectDetail(){
   if(!currentProjectId){ 
-    detailTitle.textContent='เลือกโปรเจกต์'; 
-    detailDesc.textContent='ไม่มีโปรเจกต์ที่เลือก'; 
-    membersCount.textContent='0 สมาชิก'; 
+    detailTitle.textContent='Select the project'; 
+    detailDesc.textContent='You haven\'t selected the project'; 
+    membersCount.textContent='0 Member'; 
     membersList.innerHTML=''; 
-    aiSuggestion.textContent='กด "Generate Plan (AI)" เพื่อให้ระบบแนะนำแผนแบ่งงาน'; 
+    aiSuggestion.textContent='Press "Generate Plan (AI)" to recommend work plans'; 
     return; 
   }
   const p = state.projects.find(x=>x.id===currentProjectId);
   if(!p) return;
   detailTitle.textContent = p.name;
   detailDesc.textContent = p.desc || '';
-  membersCount.textContent = (p.members||[]).length + ' สมาชิก';
+  membersCount.textContent = (p.members||[]).length + ' Member';
 
   membersList.innerHTML='';
   (p.members||[]).forEach(m=>{
@@ -87,7 +97,7 @@ function renderProjectDetail(){
     edit.style.background='#446aff'; 
     const del = el('button',{},'Remove'); 
     del.classList.add('danger');
-    del.onclick=()=>{ if(confirm('ลบสมาชิก?')){ p.members = p.members.filter(x=>x.id!==m.id); saveData(state); renderAll(); }}
+    del.onclick=()=>{ if(confirm('Delete member?')){ p.members = p.members.filter(x=>x.id!==m.id); saveData(state); renderAll(); }}
     right.appendChild(edit); right.appendChild(del);
     row.appendChild(left); row.appendChild(right);
     membersList.appendChild(row);
@@ -105,7 +115,7 @@ function renderPlans(){
     view.style.background='#446aff';
     const del = el('button',{},'Delete'); 
     del.classList.add('danger');
-    del.onclick=()=>{ if(confirm('ลบแผน?')){ state.plans = state.plans.filter(x=>x.id!==pl.id); saveData(state); renderAll(); }}
+    del.onclick=()=>{ if(confirm('Delete plan?')){ state.plans = state.plans.filter(x=>x.id!==pl.id); saveData(state); renderAll(); }}
     right.appendChild(view); right.appendChild(del);
     row.appendChild(right);
     plansList.appendChild(row);
@@ -117,21 +127,21 @@ function renderAll(){ renderProjects(); renderProjectDetail(); renderPlans(); }
 // Actions
 createProjectBtn.onclick = ()=>{
   const name = projectsName.value.trim();
-  if(!name) return alert('กรุณาใส่ชื่อโปรเจกต์');
+  if(!name) return alert('Please enter project name.');
   const p = { id: uid('proj'), name, desc: projectsDesc.value.trim(), members: [], planId: null };
   state.projects.push(p); saveData(state); projectsName.value=''; projectsDesc.value=''; renderAll();
 }
 
 clearStorageBtn.onclick = ()=>{
-  if(confirm('ลบข้อมูลทั้งหมดใน LocalStorage?')){ localStorage.removeItem(StorageKey); state = {projects:[],plans:[]}; currentProjectId = null; renderAll(); }
+  if(confirm('Delete all data in LocalStorage?')){ localStorage.removeItem(StorageKey); state = {projects:[],plans:[]}; currentProjectId = null; renderAll(); }
 }
 
 function openProject(id){ currentProjectId = id; renderAll(); }
 
 addMemberBtn.onclick = ()=>{
-  if(!currentProjectId) return alert('เลือกโปรเจกต์ก่อน');
+  if(!currentProjectId) return alert('Select project first');
   const p = state.projects.find(x=>x.id===currentProjectId);
-  const name = memberName.value.trim(); if(!name) return alert('ใส่ชื่อสมาชิก');
+  const name = memberName.value.trim(); if(!name) return alert('Enter member name');
   const skills = memberSkills.value.split(',').map(s=>s.trim()).filter(Boolean);
   const weakness = memberWeakness.value.split(',').map(s=>s.trim()).filter(Boolean);
   p.members.push({id: uid('m'), name, skills, weakness});
@@ -141,24 +151,24 @@ addMemberBtn.onclick = ()=>{
 function editMember(mid){
   const p = state.projects.find(x=>x.id===currentProjectId);
   const m = p.members.find(x=>x.id===mid);
-  const n = prompt('แก้ไขชื่อสมาชิก', m.name); if(n===null) return;
+  const n = prompt('Rename', m.name); if(n===null) return;
   m.name = n.trim() || m.name;
-  const sk = prompt('แก้ไข skills (คั่นด้วย comma)', m.skills.join(', ')); if(sk!==null) m.skills = sk.split(',').map(s=>s.trim()).filter(Boolean);
-  const wk = prompt('แก้ไข weakness (คั่นด้วย comma)', m.weakness.join(', ')); if(wk!==null) m.weakness = wk.split(',').map(s=>s.trim()).filter(Boolean);
+  const sk = prompt('Edit skills (Separated by comma)', m.skills.join(', ')); if(sk!==null) m.skills = sk.split(',').map(s=>s.trim()).filter(Boolean);
+  const wk = prompt('Edit weakness (Separated by comma)', m.weakness.join(', ')); if(wk!==null) m.weakness = wk.split(',').map(s=>s.trim()).filter(Boolean);
   saveData(state); renderAll();
 }
 
 // AI integration
 generatePlanBtn.onclick = async ()=>{
-  if(!currentProjectId) return alert('เลือกโปรเจกต์ก่อน');
+  if(!currentProjectId) return alert('Select project first');
   const p = state.projects.find(x=>x.id===currentProjectId);
-  aiSuggestion.textContent = 'กำลังสร้างแผน...';
+  aiSuggestion.textContent = 'Creating a plan...';
   const prompt = buildPrompt(p);
   try{
     const resp = await fetch('/api/generate',{method:'POST',headers:{'content-type':'application/json'},body: JSON.stringify({prompt})});
     if(!resp.ok) throw new Error('no backend');
     const json = await resp.json();
-    aiSuggestion.textContent = json.plan || json.text || 'ไม่มีผลลัพธ์จาก API';
+    aiSuggestion.textContent = json.plan || json.text || 'No results from API';
   }catch(err){
     aiSuggestion.textContent = mockGeneratePlan(p);
   }
@@ -175,7 +185,7 @@ function buildPrompt(project){
 
 function mockGeneratePlan(project){
   const members = project.members||[];
-  if(members.length===0) return 'ไม่มีสมาชิกในโปรเจกต์ — กรุณาเพิ่มสมาชิกก่อน';
+  if(members.length===0) return 'There are no members in the project — Please add members first';
   const roles = [];
   members.forEach(m=>{
     const s = (m.skills||[]).map(x=>x.toLowerCase());
@@ -185,7 +195,7 @@ function mockGeneratePlan(project){
     if(s.some(x=>['db','database','sql','mongodb','postgres'].includes(x))) assigned.push('Database');
     if(s.some(x=>['doc','documentation','writer','tester','qa'].includes(x))) assigned.push('Documentation & Testing');
     if(assigned.length===0) assigned.push('General tasks / help where needed');
-    roles.push({name:m.name, assigned, reason:`มุ่งเน้นที่: ${assigned.join(', ')}${m.weakness && m.weakness.length? '; หลีกเลี่ยง: '+m.weakness.join(', '):''}`});
+    roles.push({name:m.name, assigned, reason:`Focus on: ${assigned.join(', ')}${m.weakness && m.weakness.length? '; avoid: '+m.weakness.join(', '):''}`});
   });
 
   let out = `AI Plan for ${project.name}\n\n`;
@@ -199,8 +209,8 @@ function mockGeneratePlan(project){
 // Plans CRUD
 savePlanBtn.onclick = ()=>{
   const content = planEdit.value.trim();
-  if(!content) return alert('ไม่มีเนื้อหาให้บันทึก');
-  const title = prompt('ตั้งชื่อแผน (title)') || ('Plan ' + new Date().toLocaleString());
+  if(!content) return alert('There is no content to record.');
+  const title = prompt('Name the plan (title)') || ('Plan ' + new Date().toLocaleString());
   state.plans.push({id: uid('plan'), title, content, createdAt: Date.now()});
   saveData(state); renderAll(); planEdit
 }
