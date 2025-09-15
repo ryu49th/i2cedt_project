@@ -55,13 +55,22 @@ async function fetchProjects() {
 
 // ======================
 // Renderers
-// ======================
-function renderProjects() {
-  projectsList.innerHTML = '';
-  state.projects.forEach(p => {
-    const wrap = el('div', { class:'item' });
-    const left = el('div');
-    left.innerHTML = `<div style="font-weight:600">${escapeHtml(p.name)}</div><div class='muted small'>${escapeHtml(p.desc||'')}</div>`;
+function renderProjects(){
+  projectsList.innerHTML='';
+  state.projects.forEach(p=>{
+    const wrap = el('div',{class:'item'});
+    const left = el('div', {class: 'left'}); 
+    const MAX_NAME_LENGTH = 8;
+    let shortName = escapeHtml(p.name || '');
+    if (shortName.length > MAX_NAME_LENGTH) {
+      shortName = shortName.slice(0, MAX_NAME_LENGTH) + '...';
+    }
+    const MAX_DESC_LENGTH = 8; 
+    let shortDesc = escapeHtml(p.desc || '');
+    if (shortDesc.length > MAX_DESC_LENGTH) {
+      shortDesc = shortDesc.slice(0, MAX_DESC_LENGTH) + '...';
+    }
+    left.innerHTML = `<div style="font-weight:600">${shortName}</div><div class='muted small'>${shortDesc}</div>`;
     const right = el('div',{class:'actions'});
     const open = el('button',{},'Open'); 
     open.style.background='#446aff'; 
@@ -84,14 +93,14 @@ function renderProjects() {
   });
 }
 
-function renderProjectDetail() {
-  if (!currentProjectId) {
-    detailTitle.textContent = 'เลือกโปรเจกต์'; 
-    detailDesc.textContent = 'ไม่มีโปรเจกต์ที่เลือก'; 
-    membersCount.textContent = '0 สมาชิก'; 
-    membersList.innerHTML = ''; 
-    aiSuggestion.textContent = 'กด "Generate Plan (AI)" เพื่อให้ระบบแนะนำแผนแบ่งงาน';
-    return;
+function renderProjectDetail(){
+  if(!currentProjectId){ 
+    detailTitle.textContent='Select the project'; 
+    detailDesc.textContent='You haven\'t selected the project'; 
+    membersCount.textContent='0 Member'; 
+    membersList.innerHTML=''; 
+    aiSuggestion.textContent='Press "Generate Plan (AI)" to recommend work plans'; 
+    return; 
   }
   const p = state.projects.find(x => x._id === currentProjectId);
   if(!p) return;
@@ -116,7 +125,7 @@ function renderProjectDetail() {
     const del = el('button', {}, 'Remove');
     del.classList.add('danger');
     del.onclick = async () => {
-      if(!confirm('ลบสมาชิก?')) return;
+      if(!confirm('Delete member?')) return;
       await fetch(`http://localhost:3000/api/projects/${p._id}/members/${m._id}`, { method:'DELETE' });
       p.members = p.members.filter(x => x._id !== m._id);
       renderAll();

@@ -14,7 +14,7 @@
       <img id="WS" src="/icons/logo.png" alt="w_S" class="logo" />
       <div>
         <h1>WorkSync — AI Team Work Planner</h1>
-        <div class="muted">สร้างแผนแบ่งงานให้ทีมของคุณ โดยใช้ข้อมูล skill/weakness และ AI ช่วยแนะนำ</div>
+        <div class="muted">Create a workload plan for your team by using skill/weakness data and AI recommendations.</div>
       </div>
       </div>
     </header>
@@ -26,10 +26,10 @@
         <img id="projectIcon" src="/icons/projectw.png" alt="Projects" class="icon" />
         Projects</h3>
         <div class="form">
-          <label for="projectName">ชื่อโปรเจกต์</label>
-          <input id="projectName" class="textbox" placeholder="เช่น Web App ร้านอาหาร" />
-          <label for="projectDesc">คำอธิบาย</label>
-          <textarea id="projectDesc" class="textarea-sm" placeholder="รายละเอียดคร่าวๆ ของโปรเจกต์"></textarea>
+          <label for="projectName">Project name</label>
+          <input id="projectName" class="textbox" placeholder="e.g. WorkSync" />
+          <label for="projectDesc">Description</label>
+          <textarea id="projectDesc" class="textarea-sm" placeholder="Description of your project"></textarea>
           <div class="btn-group">
             <button id="createProjectBtn" class="botton2">Create</button>
             <button id="clearStorageBtn" class="danger">Clear All</button>
@@ -43,17 +43,17 @@
       <section class="card">
         <div class="project-header">
           <div>
-            <h3 id="detailTitle">เลือกโปรเจกต์</h3>
-            <div class="muted" id="detailDesc">ไม่มีโปรเจกต์ที่เลือก</div>
+            <h3 id="detailTitle">Select the project</h3>
+            <div class="muted" id="detailDesc">You haven't selected the project</div>
           </div>
-          <div class="chip" id="membersCount">0 สมาชิก</div>
+          <div class="chip" id="membersCount">0 Member</div>
         </div>
         <hr>
         <div class="form">
-          <label>เพิ่มสมาชิก</label>
-          <input id="memberName" class="textbox" placeholder="ชื่อ (เช่น สมชาย)" />
-          <input id="memberSkills" class="textbox" placeholder="ความถนัด เช่น frontend, react" />
-          <input id="memberWeakness" class="textbox" placeholder="สิ่งที่ไม่ถนัด เช่น db, ui" />
+          <label>Add member</label>
+          <input id="memberName" class="textbox" placeholder="Name e.g. Min" />
+          <input id="memberSkills" class="textbox" placeholder="Good at e.g. frontend backend" />
+          <input id="memberWeakness" class="textbox" placeholder="Not good at e.g. database backend" />
           <div class="btn-group">
             <button id="generatePlanBtn" class="botton2">Generate Plan (AI)</button>
             <button id="addMemberBtn" class =botton1>Add member</button>
@@ -62,11 +62,11 @@
 
         <h4>
           <img id="memberIcon" src="/icons/memberw.png" alt="Members" class="icon" />
-          สมาชิก</h4>
+          Member</h4>
         <div id="membersList" class="list"></div>
 
         <h4>AI Suggestion</h4>
-        <div class="plan-area" id="aiSuggestion">กด "Generate Plan (AI)" เพื่อให้ระบบแนะนำแผนแบ่งงาน</div>
+        <div class="plan-area" id="aiSuggestion">Press "Generate Plan (AI)" to recommend work plans</div>
       </section>
 
       <!-- Saved Plans -->
