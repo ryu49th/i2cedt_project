@@ -38,3 +38,24 @@ exports.deletePlan = async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 };
+
+// UPDATE
+exports.updatePlan = async (req, res) => {
+  try {
+    const { content, title } = req.body; // allow updating content and/or title
+    if (!content && !title) {
+      return res.status(400).json({ error: "Nothing to update" });
+    }
+
+    const update = {};
+    if (content) update.content = content;
+    if (title) update.title = title;
+
+    const plan = await Plan.findByIdAndUpdate(req.params.id, update, { new: true });
+    if (!plan) return res.status(404).json({ error: "Plan not found" });
+
+    res.json(plan);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};

@@ -1,4 +1,4 @@
-// TaskWeaver Frontend LogiCRUD + AI)
+// TaskWeaver Frontend Logic (CRUD + AI)
 
 // State
 let state = { projects: [], plans: [] };
@@ -38,8 +38,6 @@ const generatePlanBtn = document.getElementById('generatePlanBtn');
 const aiSuggestion = document.getElementById('aiSuggestion');
 
 const plansList = document.getElementById('plansList');
-const planEdit = document.getElementById('planEdit');
-const savePlanBtn = document.getElementById('savePlanBtn');
 
 // ======================
 // Fetch Projects from Backend
@@ -48,6 +46,7 @@ async function fetchProjects() {
   try {
     const resp = await fetch('http://localhost:3000/api/projects');
     state.projects = await resp.json();
+    if (state.projects.length > 0) currentProjectId = state.projects[0]._id;
     renderAll();
   } catch (err) {
     console.error('Error fetching projects', err);
@@ -92,7 +91,6 @@ function renderProjectDetail() {
     membersCount.textContent = '0 สมาชิก'; 
     membersList.innerHTML = ''; 
     aiSuggestion.textContent = 'กด "Generate Plan (AI)" เพื่อให้ระบบแนะนำแผนแบ่งงาน';
-    planEdit.value = ''; // reset plan editor
     return;
   }
   const p = state.projects.find(x => x._id === currentProjectId);
@@ -113,14 +111,13 @@ function renderProjectDetail() {
     
     const edit = el('button', {}, 'Edit');
     edit.onclick = () => editMember(m._id);
-    
     edit.style.background='#446aff'; 
+    
     const del = el('button', {}, 'Remove');
     del.classList.add('danger');
     del.onclick = async () => {
       if(!confirm('ลบสมาชิก?')) return;
       await fetch(`http://localhost:3000/api/projects/${p._id}/members/${m._id}`, { method:'DELETE' });
-      // update local state
       p.members = p.members.filter(x => x._id !== m._id);
       renderAll();
     };
@@ -140,22 +137,23 @@ function renderPlans() {
     row.innerHTML = `<div><div style='font-weight:600'>${escapeHtml(pl.title)}</div>
                       <div class='muted small'>${new Date(pl.createdAt).toLocaleString()}</div></div>`;
     const right = el('div', { class:'actions' });
-    const view = el('button', {}, 'View');
-    view.onclick = () => { planEdit.value = pl.content; };
-    view.style.background='#446aff';
+   const view = el('button', {}, 'Edit');
+   view.onclick = () => openPlanModal(pl);
+   view.style.background='#446aff';
+    
     const del = el('button', {}, 'Delete');
     del.classList.add('danger');
     del.onclick = async () => {
-    try {
-      const resp = await fetch(`http://localhost:3000/api/plans/${pl._id}`, { method: 'DELETE' });
-      if (!resp.ok) throw new Error('Failed to delete plan');
-      state.plans = state.plans.filter(x => x._id !== pl._id);
-      renderAll();
-    } 
-    catch (err) {
-      alert('Error deleting plan: ' + err.message);
-    }
-  };
+      try {
+        const resp = await fetch(`http://localhost:3000/api/plans/${pl._id}`, { method: 'DELETE' });
+        if (!resp.ok) throw new Error('Failed to delete plan');
+        state.plans = state.plans.filter(x => x._id !== pl._id);
+        renderAll();
+      } catch (err) {
+        alert('Error deleting plan: ' + err.message);
+      }
+    };
+    
     right.appendChild(view);
     right.appendChild(del);
     row.appendChild(right);
@@ -204,13 +202,10 @@ async function openProject(id) {
     state.plans = [];
   }
 
-  // Reset AI suggestion + Plan editor
   aiSuggestion.textContent = 'กด "Generate Plan (AI)" เพื่อให้ระบบแนะนำแผนแบ่งงาน';
-  planEdit.value = '';
 
   renderAll();
 }
-
 
 // Add member
 addMemberBtn.onclick = async () => {
@@ -242,18 +237,6 @@ addMemberBtn.onclick = async () => {
   }
 };
 
-// Delete member
-function deleteMember(memberId){
-  const p = state.projects.find(x => x._id === currentProjectId);
-  fetch(`http://localhost:3000/api/projects/${p._id}/members/${memberId}`, { method:'DELETE' })
-    .then(r => r.json())
-    .then(updatedProject => {
-      state.projects = state.projects.map(x => x._id === updatedProject._id ? updatedProject : x);
-      renderAll();
-    })
-    .catch(err => alert('Error deleting member: ' + err.message));
-}
-
 // Edit member
 function editMember(memberId){
   const p = state.projects.find(x => x._id === currentProjectId);
@@ -282,174 +265,91 @@ function editMember(memberId){
     .catch(err => alert('Error editing member: ' + err.message));
 }
 
+// ======================
+// AI Plan
+// ======================
+let currentAISuggestion = ''; // เก็บ AI Plan ล่าสุด
 
-// ======================
-// AI Plan with Better Error Handling
-// ======================
 generatePlanBtn.onclick = async () => {
   if(!currentProjectId) return alert('เลือกโปรเจกต์ก่อน');
   const p = state.projects.find(x => x._id === currentProjectId);
-  
-  // Check if project has members
+
   if(!p.members || p.members.length === 0) {
-    aiSuggestion.textContent = 'กรุณาเพิ่มสมาชิกในโปรเจกต์ก่อนสร้างแผน';
+    aiSuggestion.textContent = 'กรุณาเพิ่มสมาชิกก่อน';
     return;
   }
-  
-  aiSuggestion.textContent = 'กำลังสร้างแผนด้วย AI... (อาจใช้เวลา 10-30 วินาที)';
-  const prompt = buildPrompt(p);
-  
-  try {
-    console.log('Sending AI request...');
-    console.log('Prompt:', prompt);
-    
+
+  aiSuggestion.textContent = 'กำลังสร้างแผนด้วย AI...';
+
+  try{
     const resp = await fetch('http://localhost:3000/api/generate', {
-      method:'POST', 
-      headers:{ 
-        'Content-Type':'application/json',
-        'Accept': 'application/json'
-      }, 
-      body: JSON.stringify({prompt})
+      method:'POST',
+      headers:{ 'Content-Type':'application/json' },
+      body: JSON.stringify({ prompt: buildPrompt(p) })
     });
-    
-    console.log('Response status:', resp.status);
-    console.log('Response headers:', [...resp.headers.entries()]);
-    
-    const responseText = await resp.text();
-    console.log('Raw response:', responseText);
-    
-    if (!resp.ok) {
-      let errorMessage = `HTTP ${resp.status}`;
-      try {
-        const errorJson = JSON.parse(responseText);
-        errorMessage = errorJson.error || errorMessage;
-        console.log('Error details:', errorJson);
-      } catch (e) {
-        console.log('Could not parse error as JSON');
-      }
-      throw new Error(errorMessage);
-    }
-    
-    const json = JSON.parse(responseText);
-    
-    if (json.plan) {
-      aiSuggestion.innerHTML = `<div style="white-space: pre-wrap; font-family: inherit;">${escapeHtml(json.plan)}</div>`;
+
+    const json = await resp.json();
+
+    if(json.plan){
+      // แสดงใน div
+      aiSuggestion.innerHTML = `<pre style="white-space: pre-wrap;">${escapeHtml(json.plan)}</pre>`;
+      // เก็บ content เพื่อ Save
+      currentAISuggestion = json.plan;
     } else {
       aiSuggestion.textContent = 'ไม่มีผลลัพธ์จาก AI';
+      currentAISuggestion = '';
     }
-    
-  } catch (error) {
-    console.error('AI generation error:', error);
-    
-    // More detailed error messages
-    let errorMsg = 'เกิดข้อผิดพลาดในการสร้างแผน: ';
-    
-    if (error.message.includes('Failed to fetch')) {
-      errorMsg += 'ไม่สามารถเชื่อมต่อกับ server ได้ (ตรวจสอบว่า backend server กำลังทำงานอยู่)';
-    } else if (error.message.includes('quota')) {
-      errorMsg += 'API quota หมด - ตรวจสอบ billing';
-    } else if (error.message.includes('API key')) {
-      errorMsg += 'API key ไม่ถูกต้อง';
-    } else {
-      errorMsg += error.message;
-    }
-    
-    aiSuggestion.innerHTML = `<div style="color: #ff6b6b; padding: 10px; background: rgba(255,107,107,0.1); border-radius: 4px;">${errorMsg}</div>`;
+
+  } catch(err){
+    console.error(err);
+    aiSuggestion.textContent = 'เกิดข้อผิดพลาด';
+    currentAISuggestion = '';
   }
 };
 
-// Enhanced prompt building with better formatting
-function buildPrompt(project) {
-  // --- ส่วนที่เพิ่มเข้ามา ---
-  // 1. กำหนดบทบาทให้ AI เป็นผู้จัดการที่เน้นการพัฒนาทีม
-  let s = `คุณคือผู้จัดการโปรเจกต์ AI ที่มีความเชี่ยวชาญในการวางแผนและกระจายงาน โดยมีเป้าหมายสูงสุดคือการพัฒนาศักยภาพของสมาชิกในทีมควบคู่ไปกับความสำเร็จของโปรเจกต์\n\n`;
+// ปุ่ม Save AI Suggestion
+applyPlanBtn.onclick = async () => {
+  if(!currentProjectId) return alert('เลือกโปรเจกต์ก่อน');
+  if(!currentAISuggestion) return alert('ไม่มี AI Plan ให้บันทึก');
 
-  s += `สร้างแผนการทำงานสำหรับโปรเจกต์:\n\n`;
-  s += `ชื่อโปรเจกต์: ${project.name}\n`;
-  s += `รายละเอียด: ${project.desc || 'ไม่มีรายละเอียดเพิ่มเติม'}\n\n`;
-  s += `สมาชิกในทีม (${project.members.length} คน):\n`;
-
-  project.members.forEach((m, index) => {
-    s += `${index + 1}. ${m.name}\n`;
-    s += `   จุดแข็ง: ${(m.skills && m.skills.length > 0) ? m.skills.join(', ') : 'ไม่ระบุ'}\n`;
-    s += `   จุดอ่อน: ${(m.weakness && m.weakness.length > 0) ? m.weakness.join(', ') : 'ไม่ระบุ'}\n\n`;
-  });
-
-  // --- ส่วนที่ปรับปรุงใหม่ ---
-  // 2. กำหนดเป้าหมายหลักให้ชัดเจน เน้นการเรียนรู้และช่วยเหลือกัน
-  s += `**เป้าหมายหลักในการสร้างแผน:**\n`;
-  s += `1.  **กระจายงานตามความถนัด:** มอบหมายงานหลักให้ตรงตามจุดแข็งของแต่ละคน เพื่อให้โปรเจกต์เดินหน้าได้อย่างมีประสิทธิภาพ\n`;
-  s += `2.  **ส่งเสริมการเรียนรู้และพัฒนา:** สำหรับงานที่จำเป็นแต่ไม่มีใครถนัด หรือตรงกับจุดอ่อนของสมาชิก ให้สร้างโอกาสในการเรียนรู้โดย:\n`;
-  s += `    -   **จับคู่ (Pairing):** ให้คนที่มีทักษะใกล้เคียงที่สุดรับหน้าที่เป็น **พี่เลี้ยง (Mentor)** คอยแนะนำและตรวจสอบ และให้คนที่ต้องการพัฒนาหรือมีจุดอ่อนในเรื่องนั้นเป็น **ผู้เรียนรู้ (Mentee)** ทำงานร่วมกัน\n`;
-  s += `    -   หากไม่มีใครมีทักษะเลย ให้มอบหมาย 2-3 คนช่วยกันศึกษาและรับผิดชอบร่วมกัน\n`;
-  s += `3.  **เน้นการทำงานร่วมกัน:** ออกแบบให้มีการช่วยเหลือและตรวจสอบความคืบหน้าระหว่างทีมอยู่เสมอ\n\n`;
-
-  s += `กรุณาสร้างแผนการทำงานที่ครอบคลุมตามเป้าหมายข้างต้น โดยตอบเป็นภาษาไทยทั้งหมด ในรูปแบบที่ต้องการดังนี้:\n\n`;
-  s += `**1. การแบ่งหน้าที่และความรับผิดชอบ:**\n`;
-  s += `- อธิบายว่าใครรับผิดชอบงานหลักส่วนไหน เพราะเหตุใด (อ้างอิงจากจุดแข็ง)\n`;
-  s += `- ระบุงานที่ต้องมีการเรียนรู้ พร้อมกำหนดว่าใครคือ "พี่เลี้ยง" และใครคือ "ผู้เรียนรู้" ในงานนั้นๆ\n\n`;
-
-  s += `**2. ไทม์ไลน์การทำงาน (Timeline):**\n`;
-  s += `- แบ่งโปรเจกต์เป็นเฟส (Phase) ที่ชัดเจน และอธิบายขั้นตอนการทำงานในแต่ละเฟส\n\n`;
-
-  // 3. เพิ่มคอลัมน์ "ผู้เรียนรู้/ผู้ช่วย" เพื่อให้แผนงานชัดเจนขึ้น
-  s += `**3. ตารางแผนการทำงาน (CSV Format):**\n`;
-  s += `(ใช้จุลภาค "," คั่น และบรรทัดแรกเป็น Header)\n`;
-  s += `Phase,ชื่องาน,ผู้รับผิดชอบหลัก,ผู้เรียนรู้/ผู้ช่วย,วันเริ่มต้น,วันสิ้นสุด,สถานะ\n\n`;
-
-  s += `**4. ข้อแนะนำเพิ่มเติม:**\n`;
-  s += `- ให้คำแนะนำในการสื่อสารและการทำงานร่วมกัน เพื่อสนับสนุนบรรยากาศแห่งการเรียนรู้และช่วยเหลือกันให้โปรเจกต์สำเร็จลุล่วง\n`;
-
-  return s;
-}
-
-
-function mockGeneratePlan(project){
-  const members = project.members||[];
-  if(members.length===0) return 'ไม่มีสมาชิกในโปรเจกต์ — กรุณาเพิ่มสมาชิกก่อน';
-  let out = `AI Plan for ${project.name}\n\n`;
-  members.forEach(m=>{
-    out += `- ${m.name}: General tasks / help where needed\n`;
-  });
-  out += '\nTimeline:\n1) Setup\n2) Implementation\n3) Test & Deploy\n';
-  return out;
-}
-
-// ======================
-// Plans CRUD
-// ======================
-savePlanBtn.onclick = async () => {
-  if(!currentProjectId) return alert("เลือกโปรเจกต์ก่อน");
-
-  const content = planEdit.value.trim();
-  if(!content) return alert("ไม่มีเนื้อหาให้บันทึก");
-
-  const title = prompt("ตั้งชื่อแผน (title)") || ("Plan " + new Date().toLocaleString());
+  const p = state.projects.find(x => x._id === currentProjectId);
+  const title = `AI Plan for ${p.name}`;
 
   try {
     const resp = await fetch("http://localhost:3000/api/plans", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
+      method:"POST",
+      headers:{ "Content-Type":"application/json" },
       body: JSON.stringify({
         title,
-        content,
-        projectId: currentProjectId
+        content: currentAISuggestion,
+        projectId: p._id
       })
     });
     const newPlan = await resp.json();
     state.plans.push(newPlan);
-    renderAll();
-  } catch (err) {
-    alert("Error saving plan: " + err.message);
+    renderPlans();
+    alert('AI Plan ถูกบันทึกเรียบร้อย ✅');
+  } catch(err){
+    alert('เกิดข้อผิดพลาดในการบันทึกแผน: ' + err.message);
   }
 };
+  
 
+function buildPrompt(project) {
+  let s = `คุณคือผู้จัดการโปรเจกต์ AI ที่เชี่ยวชาญในการวางแผนและกระจายงาน\n\n`;
+  s += `สร้างแผนการทำงานสำหรับโปรเจกต์:\nชื่อโปรเจกต์: ${project.name}\nรายละเอียด: ${project.desc || 'ไม่มีรายละเอียด'}\n\n`;
+  s += `สมาชิกในทีม (${project.members.length} คน):\n`;
+  project.members.forEach((m, index)=>{
+    s += `${index + 1}. ${m.name}\n   จุดแข็ง: ${(m.skills||[]).join(', ') || 'ไม่ระบุ'}\n   จุดอ่อน: ${(m.weakness||[]).join(', ') || 'ไม่ระบุ'}\n\n`;
+  });
+  s += `สร้างแผนตามจุดแข็งและการเรียนรู้ของสมาชิก โดยตอบเป็นภาษาไทย\n`;
+  return s;
+}
 
 // ======================
 // Init
 // ======================
 document.addEventListener('DOMContentLoaded', fetchProjects);
-
 
 // DOM refs สำหรับ icons
 const projectIcon = document.getElementById('projectIcon');
@@ -471,21 +371,15 @@ function updateIcons(isLightMode) {
 
 // โค้ดเดิมสำหรับสลับธีม
 const toggleBtn = document.getElementById("toggleThemeBtn");
-
 toggleBtn.addEventListener("click", () => {
   document.body.classList.toggle("light-mode");
   const isLightMode = document.body.classList.contains("light-mode");
-
-  // เปลี่ยนไอคอนปุ่ม
   toggleBtn.textContent = isLightMode ? "☀️" : "🌙";
-
-  // เรียกฟังก์ชันเปลี่ยนไอคอนรูปภาพ
   updateIcons(isLightMode);
-
-  // (เสริม) เก็บค่าลง localStorage
   localStorage.setItem("theme", isLightMode ? "light" : "dark");
 });
 
+// Clear All
 clearStorageBtn.onclick = async () => {
   if (!confirm("ลบโปรเจกต์ทั้งหมดจริงหรือ?")) return;
   try {
@@ -499,52 +393,73 @@ clearStorageBtn.onclick = async () => {
   }
 };
 
-applyPlanBtn.onclick = async () => {
-  if (!currentProjectId) return alert('เลือกโปรเจกต์ก่อน');
-  const p = state.projects.find(x => x._id === currentProjectId);
-  if (!p) return;
-
-  const planContent = aiSuggestion.textContent;
-  if (!planContent || planContent.startsWith('กำลังสร้าง')) {
-    return alert('ไม่มีแผนให้บันทึก');
-  }
-
-  const title = `AI Plan for ${p.name} - ${new Date().toLocaleString()}`;
-
-  try {
-    const resp = await fetch("http://localhost:3000/api/plans", {
-      method: "POST",
-      headers: { "Content-Type":"application/json" },
-      body: JSON.stringify({
-        title,
-        content: planContent,
-        projectId: p._id
-      })
-    });
-
-    const newPlan = await resp.json();
-    if (!resp.ok) throw new Error(newPlan.error || 'Failed to save plan');
-
-    state.plans.push(newPlan);
-    renderPlans();
-    alert('แผนงานถูกบันทึกเรียบร้อย ✅');
-  } catch (err) {
-    console.error(err);
-    alert('เกิดข้อผิดพลาดในการบันทึกแผนงาน');
-  }
-};
-
-
-// โหลดค่าธีมจาก localStorage
+// โหลดธีมจาก localStorage
 window.addEventListener("DOMContentLoaded", () => {
   const savedTheme = localStorage.getItem("theme");
   const isLightMode = savedTheme === "light";
-
   if (isLightMode) {
     document.body.classList.add("light-mode");
     toggleBtn.textContent = "☀️";
   }
-
-  // เรียกฟังก์ชันเปลี่ยนไอคอนเมื่อหน้าเว็บโหลด
   updateIcons(isLightMode);
 });
+
+let currentEditingPlan = null;
+
+// เปิด modal
+function openPlanModal(plan){
+  currentEditingPlan = plan;
+  modalPlanEdit.value = plan.content;
+  editPlanModal.style.display = 'block';
+}
+
+// Save plan จาก modal
+modalSaveBtn.onclick = async () => {
+  if(!currentEditingPlan) return;
+
+  const updatedContent = modalPlanEdit.value.trim();
+  if(!updatedContent) return alert('ไม่มีเนื้อหาให้บันทึก');
+
+  try{
+    const resp = await fetch(`http://localhost:3000/api/plans/${currentEditingPlan._id}`, {
+      method:'PUT',
+      headers:{ 'Content-Type':'application/json' },
+      body: JSON.stringify({ content: updatedContent })
+    });
+
+    if(!resp.ok){
+      const errJson = await resp.json().catch(()=>({error:'Failed to save plan'}));
+      throw new Error(errJson.error || 'Failed to save plan');
+    }
+
+    const updatedPlan = await resp.json();
+    state.plans = state.plans.map(p => p._id === updatedPlan._id ? updatedPlan : p);
+
+    renderAll();
+    editPlanModal.style.display = 'none';
+    currentEditingPlan = null;
+
+  } catch(err){
+    alert('Error saving plan: ' + err.message);
+  }
+};
+
+// Cancel modal
+modalCancelBtn.onclick = () => {
+  editPlanModal.style.display = 'none';
+  currentEditingPlan = null;
+};
+
+// ปิด modal เมื่อคลิก X
+closeModal.onclick = () => {
+  editPlanModal.style.display = 'none';
+  currentEditingPlan = null;
+};
+
+// ปิด modal เมื่อคลิกนอก modal
+window.onclick = e => {
+  if(e.target === editPlanModal){
+    editPlanModal.style.display = 'none';
+    currentEditingPlan = null;
+  }
+};

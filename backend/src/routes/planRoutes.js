@@ -12,4 +12,8 @@ router.get('/:projectId', planController.getPlansByProject);
 // DELETE
 router.delete('/:id', planController.deletePlan);
 
+// UPDATE
+router.put('/:id', planController.updatePlan);
+
+
 module.exports = router;

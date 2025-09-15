@@ -76,19 +76,26 @@
           Saved Plans</h3>
         <div id="plansList" class="list"></div>
         <hr>
-        <h4>Preview / Edit</h4>
-        <textarea id="planEdit" class="textarea-sm" placeholder="แก้ไขแผนได้ที่นี่"></textarea>
         <div class="btn-group">
           <button id="applyPlanBtn" class =botton2>Apply to project</button>
-          <button id="savePlanBtn" class =botton1>Save Plan</button>
         </div>
-        <footer>
-          <div>Frontend: vanilla HTML/CSS/JS</div>
-          <div class="muted">ข้อมูลเก็บใน LocalStorage. ถ้ามี backend, ตั้งค่า endpoint <code>/api/generate</code></div>
-        </footer>
       </section>
     </main>
   </div>
+  <!-- Edit Plan Modal -->
+<!-- Plan Edit Modal -->
+<div id="editPlanModal" class="modal" style="display:none;">
+  <div class="modal-content">
+    <span id="closeModal" class="close">&times;</span>
+    <h3>Edit Plan</h3>
+    <textarea id="modalPlanEdit" class="textarea-sm" placeholder="แก้ไขแผนที่นี่"></textarea>
+    <div class="btn-group" style="margin-top:10px;">
+      <button id="modalSaveBtn" class="botton2">Save</button>
+      <button id="modalCancelBtn" class="botton1">Cancel</button>
+    </div>
+  </div>
+</div>
+
 
  <script type="module" src="scripts/main.js"></script>
 </body>
