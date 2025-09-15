@@ -19,7 +19,7 @@ Before running this application, make sure you have the following installed:
 ### 1. Clone the Repository
 
 ```bash
-git clone https://github.com/ryu49th/i2cedt_project.git
+git clone -b API https://github.com/ryu49th/i2cedt_project.git
 cd i2cedt_project
 ```
 
