@@ -12,4 +12,5 @@ const ProjectSchema = new mongoose.Schema({
   members: [MemberSchema]
 });
 
-module.exports = mongoose.model('Project', ProjectSchema);
+// ป้องกัน OverwriteModelError
+module.exports = mongoose.models.Project || mongoose.model('Project', ProjectSchema);

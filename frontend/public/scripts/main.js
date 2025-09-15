@@ -1,4 +1,4 @@
-// TaskWeaver Frontend Logic (CRUD + AI)
+// TaskWeaver Frontend LogiCRUD + AI)
 
 // State
 let state = { projects: [], plans: [] };
@@ -86,12 +86,13 @@ function renderProjects() {
 }
 
 function renderProjectDetail() {
-  if(!currentProjectId) {
-    detailTitle.textContent='เลือกโปรเจกต์'; 
-    detailDesc.textContent='ไม่มีโปรเจกต์ที่เลือก'; 
-    membersCount.textContent='0 สมาชิก'; 
-    membersList.innerHTML=''; 
-    aiSuggestion.textContent='กด "Generate Plan (AI)" เพื่อให้ระบบแนะนำแผนแบ่งงาน';
+  if (!currentProjectId) {
+    detailTitle.textContent = 'เลือกโปรเจกต์'; 
+    detailDesc.textContent = 'ไม่มีโปรเจกต์ที่เลือก'; 
+    membersCount.textContent = '0 สมาชิก'; 
+    membersList.innerHTML = ''; 
+    aiSuggestion.textContent = 'กด "Generate Plan (AI)" เพื่อให้ระบบแนะนำแผนแบ่งงาน';
+    planEdit.value = ''; // reset plan editor
     return;
   }
   const p = state.projects.find(x => x._id === currentProjectId);
@@ -144,10 +145,17 @@ function renderPlans() {
     view.style.background='#446aff';
     const del = el('button', {}, 'Delete');
     del.classList.add('danger');
-    del.onclick = () => {
+    del.onclick = async () => {
+    try {
+      const resp = await fetch(`http://localhost:3000/api/plans/${pl._id}`, { method: 'DELETE' });
+      if (!resp.ok) throw new Error('Failed to delete plan');
       state.plans = state.plans.filter(x => x._id !== pl._id);
       renderAll();
-    };
+    } 
+    catch (err) {
+      alert('Error deleting plan: ' + err.message);
+    }
+  };
     right.appendChild(view);
     right.appendChild(del);
     row.appendChild(right);
@@ -185,7 +193,24 @@ createProjectBtn.onclick = async () => {
   }
 };
 
-function openProject(id) { currentProjectId = id; renderAll(); }
+async function openProject(id) {
+  currentProjectId = id;
+
+  try {
+    const resp = await fetch(`http://localhost:3000/api/plans/${id}`);
+    state.plans = await resp.json();
+  } catch (err) {
+    console.error("Error fetching plans", err);
+    state.plans = [];
+  }
+
+  // Reset AI suggestion + Plan editor
+  aiSuggestion.textContent = 'กด "Generate Plan (AI)" เพื่อให้ระบบแนะนำแผนแบ่งงาน';
+  planEdit.value = '';
+
+  renderAll();
+}
+
 
 // Add member
 addMemberBtn.onclick = async () => {
@@ -335,7 +360,11 @@ generatePlanBtn.onclick = async () => {
 
 // Enhanced prompt building with better formatting
 function buildPrompt(project) {
-  let s = `สร้างแผนการทำงานสำหรับโปรเจกต์:\n\n`;
+  // --- ส่วนที่เพิ่มเข้ามา ---
+  // 1. กำหนดบทบาทให้ AI เป็นผู้จัดการที่เน้นการพัฒนาทีม
+  let s = `คุณคือผู้จัดการโปรเจกต์ AI ที่มีความเชี่ยวชาญในการวางแผนและกระจายงาน โดยมีเป้าหมายสูงสุดคือการพัฒนาศักยภาพของสมาชิกในทีมควบคู่ไปกับความสำเร็จของโปรเจกต์\n\n`;
+
+  s += `สร้างแผนการทำงานสำหรับโปรเจกต์:\n\n`;
   s += `ชื่อโปรเจกต์: ${project.name}\n`;
   s += `รายละเอียด: ${project.desc || 'ไม่มีรายละเอียดเพิ่มเติม'}\n\n`;
   s += `สมาชิกในทีม (${project.members.length} คน):\n`;
@@ -346,20 +375,34 @@ function buildPrompt(project) {
     s += `   จุดอ่อน: ${(m.weakness && m.weakness.length > 0) ? m.weakness.join(', ') : 'ไม่ระบุ'}\n\n`;
   });
 
-  s += `กรุณาสร้างแผนการทำงานที่:\n`;
-  s += `1. แบ่งหน้าที่ให้แต่ละคนตามจุดแข็ง\n`;
-  s += `2. หลีกเลี่ยงงานที่ตรงกับจุดอ่อนของแต่ละคน\n`;
-  s += `3. มีไทม์ไลน์ชัดเจน จำนวนขั้นตอนตามความเหมาะสม\n`;
-  s += `4. อธิบายเหตุผลในการแบ่งงาน\n`;
-  s += `5. ตอบเป็นภาษาไทย\n\n`;
-  s += `รูปแบบที่ต้องการ:\n`;
-  s += `- การแบ่งหน้าที่แต่ละคน\n`;
-  s += `- ไทม์ไลน์การทำงาน (อธิบายเป็นขั้นตอน)\n`;
-  s += `- ตารางแผนการทำงานในรูปแบบ CSV โดยใช้จุลภาค (,) คั่นและบรรทัดแรกเป็น Header คือ: Phase,ชื่องาน,ผู้รับผิดชอบ,วันเริ่มต้น,วันสิ้นสุด,สถานะ\n`;
-  s += `- ข้อแนะนำเพิ่มเติม`;
+  // --- ส่วนที่ปรับปรุงใหม่ ---
+  // 2. กำหนดเป้าหมายหลักให้ชัดเจน เน้นการเรียนรู้และช่วยเหลือกัน
+  s += `**เป้าหมายหลักในการสร้างแผน:**\n`;
+  s += `1.  **กระจายงานตามความถนัด:** มอบหมายงานหลักให้ตรงตามจุดแข็งของแต่ละคน เพื่อให้โปรเจกต์เดินหน้าได้อย่างมีประสิทธิภาพ\n`;
+  s += `2.  **ส่งเสริมการเรียนรู้และพัฒนา:** สำหรับงานที่จำเป็นแต่ไม่มีใครถนัด หรือตรงกับจุดอ่อนของสมาชิก ให้สร้างโอกาสในการเรียนรู้โดย:\n`;
+  s += `    -   **จับคู่ (Pairing):** ให้คนที่มีทักษะใกล้เคียงที่สุดรับหน้าที่เป็น **พี่เลี้ยง (Mentor)** คอยแนะนำและตรวจสอบ และให้คนที่ต้องการพัฒนาหรือมีจุดอ่อนในเรื่องนั้นเป็น **ผู้เรียนรู้ (Mentee)** ทำงานร่วมกัน\n`;
+  s += `    -   หากไม่มีใครมีทักษะเลย ให้มอบหมาย 2-3 คนช่วยกันศึกษาและรับผิดชอบร่วมกัน\n`;
+  s += `3.  **เน้นการทำงานร่วมกัน:** ออกแบบให้มีการช่วยเหลือและตรวจสอบความคืบหน้าระหว่างทีมอยู่เสมอ\n\n`;
+
+  s += `กรุณาสร้างแผนการทำงานที่ครอบคลุมตามเป้าหมายข้างต้น โดยตอบเป็นภาษาไทยทั้งหมด ในรูปแบบที่ต้องการดังนี้:\n\n`;
+  s += `**1. การแบ่งหน้าที่และความรับผิดชอบ:**\n`;
+  s += `- อธิบายว่าใครรับผิดชอบงานหลักส่วนไหน เพราะเหตุใด (อ้างอิงจากจุดแข็ง)\n`;
+  s += `- ระบุงานที่ต้องมีการเรียนรู้ พร้อมกำหนดว่าใครคือ "พี่เลี้ยง" และใครคือ "ผู้เรียนรู้" ในงานนั้นๆ\n\n`;
+
+  s += `**2. ไทม์ไลน์การทำงาน (Timeline):**\n`;
+  s += `- แบ่งโปรเจกต์เป็นเฟส (Phase) ที่ชัดเจน และอธิบายขั้นตอนการทำงานในแต่ละเฟส\n\n`;
+
+  // 3. เพิ่มคอลัมน์ "ผู้เรียนรู้/ผู้ช่วย" เพื่อให้แผนงานชัดเจนขึ้น
+  s += `**3. ตารางแผนการทำงาน (CSV Format):**\n`;
+  s += `(ใช้จุลภาค "," คั่น และบรรทัดแรกเป็น Header)\n`;
+  s += `Phase,ชื่องาน,ผู้รับผิดชอบหลัก,ผู้เรียนรู้/ผู้ช่วย,วันเริ่มต้น,วันสิ้นสุด,สถานะ\n\n`;
+
+  s += `**4. ข้อแนะนำเพิ่มเติม:**\n`;
+  s += `- ให้คำแนะนำในการสื่อสารและการทำงานร่วมกัน เพื่อสนับสนุนบรรยากาศแห่งการเรียนรู้และช่วยเหลือกันให้โปรเจกต์สำเร็จลุล่วง\n`;
 
   return s;
 }
+
 
 function mockGeneratePlan(project){
   const members = project.members||[];
@@ -375,13 +418,32 @@ function mockGeneratePlan(project){
 // ======================
 // Plans CRUD
 // ======================
-savePlanBtn.onclick = () => {
+savePlanBtn.onclick = async () => {
+  if(!currentProjectId) return alert("เลือกโปรเจกต์ก่อน");
+
   const content = planEdit.value.trim();
-  if(!content) return alert('ไม่มีเนื้อหาให้บันทึก');
-  const title = prompt('ตั้งชื่อแผน (title)') || ('Plan ' + new Date().toLocaleString());
-  state.plans.push({id: uid('plan'), title, content, createdAt: Date.now()});
-  renderAll();
+  if(!content) return alert("ไม่มีเนื้อหาให้บันทึก");
+
+  const title = prompt("ตั้งชื่อแผน (title)") || ("Plan " + new Date().toLocaleString());
+
+  try {
+    const resp = await fetch("http://localhost:3000/api/plans", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        title,
+        content,
+        projectId: currentProjectId
+      })
+    });
+    const newPlan = await resp.json();
+    state.plans.push(newPlan);
+    renderAll();
+  } catch (err) {
+    alert("Error saving plan: " + err.message);
+  }
 };
+
 
 // ======================
 // Init
@@ -434,6 +496,41 @@ clearStorageBtn.onclick = async () => {
     renderAll();
   } catch (err) {
     alert("Error clearing all projects: " + err.message);
+  }
+};
+
+applyPlanBtn.onclick = async () => {
+  if (!currentProjectId) return alert('เลือกโปรเจกต์ก่อน');
+  const p = state.projects.find(x => x._id === currentProjectId);
+  if (!p) return;
+
+  const planContent = aiSuggestion.textContent;
+  if (!planContent || planContent.startsWith('กำลังสร้าง')) {
+    return alert('ไม่มีแผนให้บันทึก');
+  }
+
+  const title = `AI Plan for ${p.name} - ${new Date().toLocaleString()}`;
+
+  try {
+    const resp = await fetch("http://localhost:3000/api/plans", {
+      method: "POST",
+      headers: { "Content-Type":"application/json" },
+      body: JSON.stringify({
+        title,
+        content: planContent,
+        projectId: p._id
+      })
+    });
+
+    const newPlan = await resp.json();
+    if (!resp.ok) throw new Error(newPlan.error || 'Failed to save plan');
+
+    state.plans.push(newPlan);
+    renderPlans();
+    alert('แผนงานถูกบันทึกเรียบร้อย ✅');
+  } catch (err) {
+    console.error(err);
+    alert('เกิดข้อผิดพลาดในการบันทึกแผนงาน');
   }
 };
 

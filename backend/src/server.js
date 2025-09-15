@@ -6,6 +6,7 @@ const mongoose = require('mongoose');
 const aiRoutes = require('./routes/aiRoutes');
 
 const projectRoutes = require('./routes/projectRoutes');
+const planRoutes = require("./routes/planRoutes");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -13,6 +14,9 @@ const PORT = process.env.PORT || 3000;
 // Middleware
 app.use(cors());
 app.use(express.json());
+
+app.use("/api/plans", planRoutes);
+
 
 app.use('/api', aiRoutes);
 // DB connect

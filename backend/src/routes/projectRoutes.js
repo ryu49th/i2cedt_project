@@ -1,5 +1,6 @@
 const express = require('express');
 const router = express.Router();
+const planController = require('../controllers/planController');
 const projectController = require('../controllers/projectController');
 
 // CRUD routes
