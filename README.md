@@ -1,4 +1,4 @@
-# TaskWeaver - Project Management System
+# WorkSync — AI Team Work Planner
 
 A full-stack web application for project management and team collaboration
 
