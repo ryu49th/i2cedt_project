@@ -1,7 +1,7 @@
-const OpenAI = require("openai");
-const client = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY
-});
+const { GoogleGenerativeAI } = require("@google/generative-ai");
+
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
 // POST /api/generate
 exports.generatePlan = async (req, res) => {
@@ -9,19 +9,15 @@ exports.generatePlan = async (req, res) => {
     const { prompt } = req.body;
     if (!prompt) return res.status(400).json({ error: "No prompt provided" });
 
-    const completion = await client.chat.completions.create({
-      model: "gpt-4o-mini",   // or "gpt-4.1-mini" if you prefer
-      messages: [
-        { role: "system", content: "You are a project planning assistant." },
-        { role: "user", content: prompt }
-      ],
-      max_tokens: 400
-    });
+    // Call Gemini API
+    const result = await model.generateContent(prompt);
 
-    const text = completion.choices[0].message.content;
+    // Extract plain text response
+    const text = result.response.text();
+
     res.json({ plan: text });
   } catch (err) {
-    console.error("AI error:", err);
+    console.error("Gemini API error:", err);
     res.status(500).json({ error: err.message });
   }
 };

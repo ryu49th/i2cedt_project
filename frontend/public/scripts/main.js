@@ -322,9 +322,9 @@ generatePlanBtn.onclick = async () => {
     if (error.message.includes('Failed to fetch')) {
       errorMsg += 'ไม่สามารถเชื่อมต่อกับ server ได้ (ตรวจสอบว่า backend server กำลังทำงานอยู่)';
     } else if (error.message.includes('quota')) {
-      errorMsg += 'OpenAI API quota หมด - ตรวจสอบ billing';
+      errorMsg += 'API quota หมด - ตรวจสอบ billing';
     } else if (error.message.includes('API key')) {
-      errorMsg += 'OpenAI API key ไม่ถูกต้อง';
+      errorMsg += 'API key ไม่ถูกต้อง';
     } else {
       errorMsg += error.message;
     }
@@ -334,29 +334,30 @@ generatePlanBtn.onclick = async () => {
 };
 
 // Enhanced prompt building with better formatting
-function buildPrompt(project){
+function buildPrompt(project) {
   let s = `สร้างแผนการทำงานสำหรับโปรเจกต์:\n\n`;
   s += `ชื่อโปรเจกต์: ${project.name}\n`;
   s += `รายละเอียด: ${project.desc || 'ไม่มีรายละเอียดเพิ่มเติม'}\n\n`;
   s += `สมาชิกในทีม (${project.members.length} คน):\n`;
-  
+
   project.members.forEach((m, index) => {
     s += `${index + 1}. ${m.name}\n`;
     s += `   จุดแข็ง: ${(m.skills && m.skills.length > 0) ? m.skills.join(', ') : 'ไม่ระบุ'}\n`;
-    s += `   จุดอย่อน: ${(m.weakness && m.weakness.length > 0) ? m.weakness.join(', ') : 'ไม่ระบุ'}\n\n`;
+    s += `   จุดอ่อน: ${(m.weakness && m.weakness.length > 0) ? m.weakness.join(', ') : 'ไม่ระบุ'}\n\n`;
   });
-  
+
   s += `กรุณาสร้างแผนการทำงานที่:\n`;
   s += `1. แบ่งหน้าที่ให้แต่ละคนตามจุดแข็ง\n`;
   s += `2. หลีกเลี่ยงงานที่ตรงกับจุดอ่อนของแต่ละคน\n`;
-  s += `3. มีไทม์ไลน์ชัดเจน 3-5 ขั้นตอน\n`;
+  s += `3. มีไทม์ไลน์ชัดเจน จำนวนขั้นตอนตามความเหมาะสม\n`;
   s += `4. อธิบายเหตุผลในการแบ่งงาน\n`;
   s += `5. ตอบเป็นภาษาไทย\n\n`;
   s += `รูปแบบที่ต้องการ:\n`;
   s += `- การแบ่งหน้าที่แต่ละคน\n`;
-  s += `- ไทม์ไลน์การทำงาน\n`;
+  s += `- ไทม์ไลน์การทำงาน (อธิบายเป็นขั้นตอน)\n`;
+  s += `- ตารางแผนการทำงานในรูปแบบ CSV โดยใช้จุลภาค (,) คั่นและบรรทัดแรกเป็น Header คือ: Phase,ชื่องาน,ผู้รับผิดชอบ,วันเริ่มต้น,วันสิ้นสุด,สถานะ\n`;
   s += `- ข้อแนะนำเพิ่มเติม`;
-  
+
   return s;
 }
 
