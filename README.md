@@ -1,15 +1,18 @@
-# TaskWeaver - Project Management System
+# WorkSync — AI Team Work Planner
 
-A full-stack web application for project management and team collaboration
+A full-stack web application for project management and team collaboration, enhanced with AI features powered by the Gemini API.
 
 ## 📋 Prerequisites
 
 Before running this application, make sure you have the following installed:
 
-- [Node.js](https://nodejs.org/) (version 14.x or higher)
-- [npm](https://www.npmjs.com/) (comes with Node.js)
-- [MongoDB Atlas](https://www.mongodb.com/atlas) account (or local MongoDB installation)
-- [Git](https://git-scm.com/)
+-   [Node.js](https://nodejs.org/) (version 14.x or higher)
+-   [npm](https://www.npmjs.com/) (comes with Node.js)
+-   [MongoDB Atlas](https://www.mongodb.com/atlas) account (or local MongoDB installation)
+-   [Git](https://git-scm.com/)
+-   [Google AI Studio](https://aistudio.google.com/) account for a Gemini API Key
+
+---
 
 ## 🚀 Installation & Setup
 
@@ -48,6 +51,8 @@ Install frontend dependencies:
 npm install
 ```
 
+---
+
 ## 🔐 Environment Variables
 
 ### Backend Environment Setup
@@ -63,37 +68,59 @@ Add the following environment variables to your `.env` file:
 
 ```env
 MONGO_URI=mongodb+srv://your_username:your_password@cluster0.xxxxx.mongodb.net/your_database_name?retryWrites=true&w=majority&appName=Cluster0
+GEMINI_API_KEY=your_gemini_api_key
 ```
 
 **⚠️ Important Security Notes:**
-- Replace the MongoDB URI with your actual credentials
-- Never commit the `.env` file to version control
-- Add `.env` to your `.gitignore` file
 
-### MongoDB Atlas Setup
+- Replace the placeholders with your actual credentials and API key.
+- **Never** commit the `.env` file to version control.
+- Ensure `.env` is listed in your `.gitignore` file.
 
-1. Create a [MongoDB Atlas](https://www.mongodb.com/atlas) account
-2. Create a new cluster
-3. Create a database user with read/write permissions
-4. Get your connection string from the "Connect" button
-5. Replace the placeholder values in your `.env` file
+---
+
+### Getting Your API Keys & Connection String
+
+#### MongoDB Atlas Setup
+
+1. Create a [MongoDB Atlas](https://www.mongodb.com/atlas) account.
+2. Create a new cluster.
+3. Create a database user with read/write permissions.
+4. Get your connection string from the "Connect" button.
+5. Replace the placeholder `MONGO_URI` value in your `.env` file with this string.
+
+#### Gemini API Key Setup
+
+1. Go to [Google AI Studio](https://aistudio.google.com/).
+2. Sign in with your Google account.
+3. Click on the "**Get API key**" button.
+4. Click "**Create API key in new project**".
+5. Copy the generated API key.
+6. Paste it as the value for `GEMINI_API_KEY` in your `.env` file.
+
+---
 
 ## 🎯 Running the Application
 
 **Terminal 1 - Backend:**
+
 ```bash
 cd backend
 npm start
 ```
-The backend server will start on `http://localhost:3000`
+
+The backend server will start on `http://localhost:3000`.
 
 **Terminal 2 - Frontend:**
+
 ```bash
 cd frontend
 npm start
 ```
-The frontend will start on `http://localhost:3001` (or next available port)
 
+The frontend will start on `http://localhost:3001` (or the next available port).
+
+---
 
 ## 📁 Project Structure
 
