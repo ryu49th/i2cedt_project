@@ -8,7 +8,6 @@ Before running this application, make sure you have the following installed:
 
 - [Node.js](https://nodejs.org/) (version 14.x or higher)
 - [npm](https://www.npmjs.com/) (comes with Node.js)
-- [MongoDB Atlas](https://www.mongodb.com/atlas) account (or local MongoDB installation)
 - [Git](https://git-scm.com/)
 
 ## 🚀 Installation & Setup
@@ -16,7 +15,7 @@ Before running this application, make sure you have the following installed:
 ### 1. Clone the Repository
 
 ```bash
-git clone https://github.com/ryu49th/i2cedt_project.git
+git clone -b mock https://github.com/ryu49th/i2cedt_project.git
 cd i2cedt_project
 ```
 
@@ -80,14 +79,7 @@ MONGO_URI=mongodb+srv://your_username:your_password@cluster0.xxxxx.mongodb.net/y
 
 ## 🎯 Running the Application
 
-**Terminal 1 - Backend:**
-```bash
-cd backend
-npm start
-```
-The backend server will start on `http://localhost:3000`
-
-**Terminal 2 - Frontend:**
+**Terminal 1 - Frontend:**
 ```bash
 cd frontend
 npm start
