@@ -3,6 +3,7 @@
 // State
 let state = { projects: [], plans: [] };
 let currentProjectId = null;
+let currentCSV = ''; // <-- store the CSV part of the plan
 
 // Utils
 function uid(prefix='id'){ return prefix + '_' + Math.random().toString(36).slice(2,9); }
@@ -38,6 +39,17 @@ const generatePlanBtn = document.getElementById('generatePlanBtn');
 const aiSuggestion = document.getElementById('aiSuggestion');
 
 const plansList = document.getElementById('plansList');
+
+const editPlanModal = document.getElementById('editPlanModal');
+const modalPlanEdit = document.getElementById('modalPlanEdit');
+const modalTableContainer = document.getElementById('modalTableContainer');
+
+const viewTextBtn = document.getElementById('viewTextBtn');
+const viewTableBtn = document.getElementById('viewTableBtn');
+
+const modalSaveBtn = document.getElementById('modalSaveBtn');
+const modalCancelBtn = document.getElementById('modalCancelBtn');
+const closeModal = document.getElementById('closeModal');
 
 // ======================
 // Fetch Projects from Backend
@@ -78,7 +90,7 @@ function renderProjects(){
     const del = el('button',{},'Delete'); 
     del.classList.add('danger');
     del.onclick = async () => {
-      if(!confirm('ลบโปรเจกต์?')) return;
+      if(!confirm('Delete this project?')) return;
       await fetch(`http://localhost:3000/api/projects/${p._id}`, { method:'DELETE' });
       state.projects = state.projects.filter(x => x._id !== p._id);
       if(currentProjectId === p._id) currentProjectId = null;
@@ -95,11 +107,11 @@ function renderProjects(){
 
 function renderProjectDetail(){
   if(!currentProjectId){ 
-    detailTitle.textContent='Select the project'; 
-    detailDesc.textContent='You haven\'t selected the project'; 
-    membersCount.textContent='0 Member'; 
+    detailTitle.textContent='Select a Project'; 
+    detailDesc.textContent='No project selected'; 
+    membersCount.textContent='0 Members'; 
     membersList.innerHTML=''; 
-    aiSuggestion.textContent='Press "Generate Plan (AI)" to recommend work plans'; 
+    aiSuggestion.textContent='Press "Generate Plan (AI)" to get recommended work plans'; 
     return; 
   }
   const p = state.projects.find(x => x._id === currentProjectId);
@@ -107,7 +119,7 @@ function renderProjectDetail(){
   
   detailTitle.textContent = p.name;
   detailDesc.textContent = p.desc || '';
-  membersCount.textContent = (p.members?.length || 0) + ' สมาชิก';
+  membersCount.textContent = (p.members?.length || 0) + ' Members';
   
   membersList.innerHTML = '';
   (p.members || []).forEach(m => {
@@ -125,7 +137,7 @@ function renderProjectDetail(){
     const del = el('button', {}, 'Remove');
     del.classList.add('danger');
     del.onclick = async () => {
-      if(!confirm('Delete member?')) return;
+      if(!confirm('Delete this member?')) return;
       await fetch(`http://localhost:3000/api/projects/${p._id}/members/${m._id}`, { method:'DELETE' });
       p.members = p.members.filter(x => x._id !== m._id);
       renderAll();
@@ -181,7 +193,7 @@ function renderAll() {
 // ======================
 createProjectBtn.onclick = async () => {
   const name = projectsName.value.trim();
-  if(!name) return alert('กรุณาใส่ชื่อโปรเจกต์');
+  if(!name) return alert('Please enter a project name');
   const p = { name, desc: projectsDesc.value.trim(), members: [] };
   
   try {
@@ -211,14 +223,14 @@ async function openProject(id) {
     state.plans = [];
   }
 
-  aiSuggestion.textContent = 'กด "Generate Plan (AI)" เพื่อให้ระบบแนะนำแผนแบ่งงาน';
+  aiSuggestion.textContent = 'Press "Generate Plan (AI)" to get recommended work plans';
 
   renderAll();
 }
 
 // Add member
 addMemberBtn.onclick = async () => {
-  if(!currentProjectId) return alert('เลือกโปรเจกต์ก่อน');
+  if(!currentProjectId) return alert('Please select a project first');
   const p = state.projects.find(x => x._id === currentProjectId);
 
   const member = {
@@ -226,7 +238,7 @@ addMemberBtn.onclick = async () => {
     skills: memberSkills.value.split(',').map(s => s.trim()).filter(Boolean),
     weakness: memberWeakness.value.split(',').map(s => s.trim()).filter(Boolean)
   };
-  if(!member.name) return alert('ใส่ชื่อสมาชิก');
+  if(!member.name) return alert('Please enter a member name');
 
   try {
     const resp = await fetch(`http://localhost:3000/api/projects/${p._id}/members`, {
@@ -250,10 +262,10 @@ addMemberBtn.onclick = async () => {
 function editMember(memberId){
   const p = state.projects.find(x => x._id === currentProjectId);
   const m = p.members.find(x => x._id === memberId);
-  const name = prompt('แก้ไขชื่อสมาชิก', m.name);
+  const name = prompt('Edit member name', m.name);
   if(name === null) return;
-  const skills = prompt('แก้ไข skills (คั่นด้วย comma)', m.skills.join(','));
-  const weakness = prompt('แก้ไข weakness (คั่นด้วย comma)', m.weakness.join(','));
+  const skills = prompt('Edit skills (comma separated)', m.skills.join(','));
+  const weakness = prompt('Edit weaknesses (comma separated)', m.weakness.join(','));
 
   const updatedMember = {
     name: name.trim() || m.name,
@@ -277,18 +289,18 @@ function editMember(memberId){
 // ======================
 // AI Plan
 // ======================
-let currentAISuggestion = ''; // เก็บ AI Plan ล่าสุด
+let currentAISuggestion = ''; // Stores the latest AI Plan
 
 generatePlanBtn.onclick = async () => {
-  if(!currentProjectId) return alert('เลือกโปรเจกต์ก่อน');
+  if(!currentProjectId) return alert('Please select a project first');
   const p = state.projects.find(x => x._id === currentProjectId);
 
   if(!p.members || p.members.length === 0) {
-    aiSuggestion.textContent = 'กรุณาเพิ่มสมาชิกก่อน';
+    aiSuggestion.textContent = 'Please add team members first';
     return;
   }
 
-  aiSuggestion.textContent = 'กำลังสร้างแผนด้วย AI...';
+  aiSuggestion.textContent = 'Generating AI plan...';
 
   try{
     const resp = await fetch('http://localhost:3000/api/generate', {
@@ -300,26 +312,24 @@ generatePlanBtn.onclick = async () => {
     const json = await resp.json();
 
     if(json.plan){
-      // แสดงใน div
       aiSuggestion.innerHTML = `<pre style="white-space: pre-wrap;">${escapeHtml(json.plan)}</pre>`;
-      // เก็บ content เพื่อ Save
       currentAISuggestion = json.plan;
     } else {
-      aiSuggestion.textContent = 'ไม่มีผลลัพธ์จาก AI';
+      aiSuggestion.textContent = 'No result from AI';
       currentAISuggestion = '';
     }
 
   } catch(err){
     console.error(err);
-    aiSuggestion.textContent = 'เกิดข้อผิดพลาด';
+    aiSuggestion.textContent = 'An error occurred';
     currentAISuggestion = '';
   }
 };
 
-// ปุ่ม Save AI Suggestion
+// Save AI Suggestion
 applyPlanBtn.onclick = async () => {
-  if(!currentProjectId) return alert('เลือกโปรเจกต์ก่อน');
-  if(!currentAISuggestion) return alert('ไม่มี AI Plan ให้บันทึก');
+  if(!currentProjectId) return alert('Please select a project first');
+  if(!currentAISuggestion) return alert('No AI plan to save');
 
   const p = state.projects.find(x => x._id === currentProjectId);
   const title = `AI Plan for ${p.name}`;
@@ -337,35 +347,78 @@ applyPlanBtn.onclick = async () => {
     const newPlan = await resp.json();
     state.plans.push(newPlan);
     renderPlans();
-    alert('AI Plan ถูกบันทึกเรียบร้อย ✅');
+    alert('AI Plan saved successfully ✅');
   } catch(err){
-    alert('เกิดข้อผิดพลาดในการบันทึกแผน: ' + err.message);
+    alert('Error saving plan: ' + err.message);
   }
 };
-  
 
 function buildPrompt(project) {
-  let s = `คุณคือผู้จัดการโปรเจกต์ AI ที่เชี่ยวชาญในการวางแผนและกระจายงาน\n\n`;
-  s += `สร้างแผนการทำงานสำหรับโปรเจกต์:\nชื่อโปรเจกต์: ${project.name}\nรายละเอียด: ${project.desc || 'ไม่มีรายละเอียด'}\n\n`;
-  s += `สมาชิกในทีม (${project.members.length} คน):\n`;
-  project.members.forEach((m, index)=>{
-    s += `${index + 1}. ${m.name}\n   จุดแข็ง: ${(m.skills||[]).join(', ') || 'ไม่ระบุ'}\n   จุดอ่อน: ${(m.weakness||[]).join(', ') || 'ไม่ระบุ'}\n\n`;
+  // 1. Define a more advanced AI role
+  let s = `You are a Senior AI Project Manager and Strategist, an expert in breaking down high-level goals into actionable, professional work plans. You follow standard project management methodologies to ensure clarity, efficiency, and success. Your goal is to be comprehensive and realistic.\n\n`;
+
+  // 2. Provide Full Context, including the current date for realistic planning
+  s += `**CONTEXT**\n`;
+  s += `You have been assigned a new project.\n\n`;
+  s += `Project Name: ${project.name}\n`;
+  s += `Details: ${project.desc || 'No additional details'}\n\n`;
+  s += `Team Roster (${project.members.length} members):\n`;
+
+  project.members.forEach((m, index) => {
+    s += `${index + 1}. ${m.name}\n`;
+    s += `   - Strengths: ${(m.skills && m.skills.length > 0) ? m.skills.join(', ') : 'Not specified'}\n`;
+    s += `   - Weaknesses: ${(m.weakness && m.weakness.length > 0) ? m.weakness.join(', ') : 'Not specified'}\n\n`;
   });
-  s += `สร้างแผนตามจุดแข็งและการเรียนรู้ของสมาชิก โดยตอบเป็นภาษาไทย\n`;
+
+  // 3. Provide a clear, step-by-step process for the AI to follow
+  s += `**YOUR TASK & PROCESS**\n`;
+  s += `Analyze the project details and team roster, then generate a comprehensive and professional project plan. Follow these steps in your thinking:\n`;
+  s += `1.  **Analyze & Deconstruct:** First, analyze the project description to determine the primary objective, the key deliverables (the main things you need to produce), and 1-2 potential risks (e.g., skill gaps, tight deadlines).\n`;
+  s += `2.  **Structure into Phases:** Break the project down into logical, professional phases (e.g., Phase 1: Planning & Discovery, Phase 2: Design & Prototyping, Phase 3: Development & Implementation, Phase 4: Testing & QA, Phase 5: Launch & Review). Define the key tasks within each phase.\n`;
+  s += `3.  **Allocate & Justify Roles:** For each task, strategically assign a "Main Responsible" person based on their strengths. For tasks that are learning opportunities, also assign a "Learner/Assistant" (this value must be either a single person's name or the word "ALL" for group learning). Briefly justify your most important assignments.\n`;
+  s += `4.  **Create a Realistic Timeline:** Sequence tasks logically, considering dependencies. Assign concrete start and end dates for each task.\n`;
+  s += `5.  **Provide Actionable Recommendations:** Suggest a communication plan, relevant tools, and key metrics to measure the project's success.\n\n`;
+  
+  // 4. Specify the required output format in detail
+  s += `**REQUIRED OUTPUT FORMAT**\n`;
+  s += `Generate the plan in English using the exact structure below:\n\n`;
+
+  s += `**1. Project Analysis & Strategy**\n`;
+  s += `- **Project Goal:** (A single, clear sentence describing the desired outcome.)\n`;
+  s += `- **Key Deliverables:** (Bulleted list of the primary outputs.)\n`;
+  s += `- **Potential Risks:** (1-2 potential challenges to be aware of.)\n\n`;
+
+  s += `**2. Roles and Responsibilities**\n`;
+  s += `- **Team Lead:** (Assign one person as the overall project point-of-contact, based on their skills.)\n`;
+  s += `- **Key Assignments Justification:** (Briefly explain the reasoning behind 2-3 of the most critical task assignments.)\n\n`;
+  
+  s += `**3. Phased Work Timeline**\n`;
+  s += `- A detailed breakdown of each Phase and the tasks within it.\n\n`;
+
+  s += `**4. Detailed Plan (CSV Format)**\n`;
+  s += `(Use a comma "," as a separator. The first line must be the header. The "Learner/Assistant" column must contain either ONE name or the word "ALL".)\n`;
+  s += `Phase,Task Name,Main Responsible,Learner/Assistant,Start Date,End Date,Status\n\n`;
+
+  s += `**5. Professional Recommendations**\n`;
+  s += `- **Communication Cadence:** (e.g., Daily Stand-ups at 9 AM, Weekly Sync on Fridays.)\n`;
+  s += `- **Recommended Tools:** (e.g., Trello for task management, Slack for communication.)\n`;
+  s += `- **Success Metrics (KPIs):** (e.g., Complete user registration feature, Achieve 95% test coverage.)\n`;
+
   return s;
 }
+
 
 // ======================
 // Init
 // ======================
 document.addEventListener('DOMContentLoaded', fetchProjects);
 
-// DOM refs สำหรับ icons
+// DOM refs for icons
 const projectIcon = document.getElementById('projectIcon');
 const memberIcon = document.getElementById('memberIcon');
 const planIcon = document.getElementById('planIcon');
 
-// ฟังก์ชันสำหรับสลับไอคอน
+// Function to update icons
 function updateIcons(isLightMode) {
   if (isLightMode) {
     projectIcon.src = "/icons/project.png";
@@ -378,7 +431,7 @@ function updateIcons(isLightMode) {
   }
 }
 
-// โค้ดเดิมสำหรับสลับธีม
+// Theme toggle
 const toggleBtn = document.getElementById("toggleThemeBtn");
 toggleBtn.addEventListener("click", () => {
   document.body.classList.toggle("light-mode");
@@ -390,7 +443,7 @@ toggleBtn.addEventListener("click", () => {
 
 // Clear All
 clearStorageBtn.onclick = async () => {
-  if (!confirm("ลบโปรเจกต์ทั้งหมดจริงหรือ?")) return;
+  if (!confirm("Are you sure you want to delete all projects?")) return;
   try {
     await fetch("http://localhost:3000/api/projects", { method: "DELETE" });
     state.projects = [];
@@ -402,7 +455,7 @@ clearStorageBtn.onclick = async () => {
   }
 };
 
-// โหลดธีมจาก localStorage
+// Load theme from localStorage
 window.addEventListener("DOMContentLoaded", () => {
   const savedTheme = localStorage.getItem("theme");
   const isLightMode = savedTheme === "light";
@@ -415,19 +468,32 @@ window.addEventListener("DOMContentLoaded", () => {
 
 let currentEditingPlan = null;
 
-// เปิด modal
+// Open modal
 function openPlanModal(plan){
   currentEditingPlan = plan;
   modalPlanEdit.value = plan.content;
+
+  // Extract CSV portion: start at "Phase,Task Name,...", end before next "**" section
+  const csvStart = plan.content.indexOf("Phase,Task Name");
+  let csvEnd = plan.content.indexOf("**4.", csvStart); // stop at Additional Recommendations
+  if(csvEnd === -1) csvEnd = plan.content.length; // fallback if not found
+
+  currentCSV = plan.content.slice(csvStart, csvEnd).trim();
+
+  // Show text view by default
+  modalPlanEdit.style.display = 'block';
+  modalTableContainer.style.display = 'none';
+
   editPlanModal.style.display = 'block';
 }
 
-// Save plan จาก modal
+
+// Save plan from modal
 modalSaveBtn.onclick = async () => {
   if(!currentEditingPlan) return;
-
+  
   const updatedContent = modalPlanEdit.value.trim();
-  if(!updatedContent) return alert('ไม่มีเนื้อหาให้บันทึก');
+  if(!updatedContent) return alert('No content to save');
 
   try{
     const resp = await fetch(`http://localhost:3000/api/plans/${currentEditingPlan._id}`, {
@@ -459,16 +525,76 @@ modalCancelBtn.onclick = () => {
   currentEditingPlan = null;
 };
 
-// ปิด modal เมื่อคลิก X
+// Close modal on X
 closeModal.onclick = () => {
   editPlanModal.style.display = 'none';
   currentEditingPlan = null;
 };
 
-// ปิด modal เมื่อคลิกนอก modal
+// Close modal when clicking outside
 window.onclick = e => {
   if(e.target === editPlanModal){
     editPlanModal.style.display = 'none';
     currentEditingPlan = null;
   }
 };
+
+function renderCSVTable(csv){
+  if(!csv){
+    modalTableContainer.innerHTML = '<p>No table data available</p>';
+    return;
+  }
+
+  const lines = csv.trim().split('\n');
+  const headers = lines[0].split(',');
+  const rows = lines.slice(1);
+
+  const table = document.createElement('table');
+  table.style.width = '100%';
+  table.style.borderCollapse = 'collapse';
+
+  // Header
+  const thead = document.createElement('thead');
+  const headRow = document.createElement('tr');
+  headers.forEach(h => {
+    const th = document.createElement('th');
+    th.textContent = h;
+    th.style.border = '1px solid #ccc';
+    th.style.color = '1px solid #000';
+    th.style.padding = '4px';
+    th.style.background = '#f0f0f0';
+    headRow.appendChild(th);
+  });
+  thead.appendChild(headRow);
+  table.appendChild(thead);
+
+  // Body
+  const tbody = document.createElement('tbody');
+  rows.forEach(line => {
+    const tr = document.createElement('tr');
+    const cols = line.split(',');
+    cols.forEach(c => {
+      const td = document.createElement('td');
+      td.textContent = c;
+      td.style.border = '1px solid #ccc';
+      td.style.padding = '4px';
+      tr.appendChild(td);
+    });
+    tbody.appendChild(tr);
+  });
+  table.appendChild(tbody);
+
+  modalTableContainer.innerHTML = '';
+  modalTableContainer.appendChild(table);
+}
+
+viewTextBtn.addEventListener('click', () => {
+  modalPlanEdit.style.display = 'block';
+  modalTableContainer.style.display = 'none';
+});
+
+viewTableBtn.addEventListener('click', () => {
+  modalPlanEdit.style.display = 'none';
+  modalTableContainer.style.display = 'block';
+  renderCSVTable(currentCSV);
+});

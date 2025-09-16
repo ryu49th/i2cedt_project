@@ -88,7 +88,27 @@ input, textarea {
 label { font-size: 13px; display: block; margin: 6px 0; }
 
 .list { max-height: 520px; overflow: auto; }
-.item { padding: 8px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.02); display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+
+.item {
+  padding: 8px;
+  border-radius: 8px;
+  border: 1px solid rgba(255,255,255,0.02);
+  display: flex;
+  justify-content: space-between; /* space between content and actions */
+  align-items: center;             /* vertical alignment */
+  margin-bottom: 8px;
+  gap: 8px;                        /* optional: space between left/right */
+}
+
+.item > div:first-child {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.actions button {
+  min-width: 60px;
+}
 
 .plan-area { white-space: pre-wrap; background: rgba(0,0,0,0.25); padding: 12px; border-radius: 8px; margin-top: 8px; }
 
@@ -229,35 +249,16 @@ body.light-mode .plan-area{
 }
 
 #modalPlanEdit {
-  width: 100%;          /* Take full modal width */
-  height: 800px;        /* Adjust height as needed */
-  padding: 8px;
+  width: 100%;
+  height: calc(100% - 120px); /* ลบพื้นที่สำหรับ header + ปุ่ม */
+  padding: 12px;
   box-sizing: border-box;
   font-family: inherit;
   font-size: 14px;
-  resize: vertical;     /* Allow vertical resize by user */
-}
-
-
-
-.modal {
-  display: none; 
-  position: fixed; 
-  z-index: 1000; 
-  left: 0; top: 0; 
-  width: 100%; height: 100%; 
-  overflow: auto; 
-  background-color: rgba(0,0,0,0.5); 
-}
-
-.modal-content {
-  background-color: #fefefe;
-  margin: 10% auto; 
-  padding: 20px;
-  border-radius: 6px;
-  width: 100%; 
-  max-width: 600px;
-  position: relative;
+  resize: vertical;
+  border-radius: 8px;
+  background: rgba(0,0,0,0.15); /* ถ้าอยากให้เห็นความแตกต่าง */
+  color: inherit;
 }
 
 .close {
@@ -270,16 +271,135 @@ body.light-mode .plan-area{
 .modal-content {
   background-color: #1e1e2a; /* dark modal background for dark mode */
   color: #e6eef8;            /* light text for dark mode */
-  margin: 10% auto; 
+  margin: 5% auto;           /* bring it closer to top */
+  padding: 24px;             /* a bit more padding */
+  border-radius: 12px;       /* more rounded corners */
+  width: 90%;                /* wider modal */
+  max-width: 1000px;         /* allow larger width */
+  height: 90%;               /* take most of screen height */
+  position: relative;
+  overflow-y: auto;          /* allow scrolling inside modal if content exceeds */
+}
+
+/* Optional: light mode */
+body.light-mode .modal-content {
+  background-color: #ffffff;
+  color: #000000;
+  width: 90%;
+  max-width: 1000px;
+  height: 90%;
+}
+
+/* Modal backdrop */
+.modal {
+  display: none;
+  position: fixed;
+  z-index: 1000;
+  left: 0; top: 0;
+  width: 100%; height: 100%;
+  overflow: auto;
+  background-color: rgba(0,0,0,0.5);
+}
+
+/* Modal content */
+.modal-content {
+  background-color: #1e1e2a;  /* dark mode */
+  color: #e6eef8;
+  margin: 1% auto;            /* ขยับขึ้นเล็กน้อย */
   padding: 20px;
-  border-radius: 6px;
-  width: 100%; 
-  max-width: 600px;
+  border-radius: 12px;
+  width: 100%;                 /* ขยายเต็มหน้าจอ */
+  max-width: 900px;           /* กำหนดขนาดสูงสุด */
+  height: 100%;                /* ขยายสูง */
+  display: flex;
+  flex-direction: column;
   position: relative;
 }
 
-/* Optional: separate styles for light mode */
+/* Light mode */
 body.light-mode .modal-content {
-  background-color: #ffffff; /* light background */
-  color: #000000;            /* dark text */
+  background-color: #ffffff;
+  color: #000000;
+}
+
+/* Close button */
+.close {
+  position: absolute;
+  top: 12px;
+  right: 20px;
+  font-size: 28px;
+  cursor: pointer;
+}
+
+/* Textarea ใน modal ขยายเต็ม */
+#modalPlanEdit {
+  flex: 1;                   /* เติมเต็มพื้นที่แนวตั้ง */
+  width: 100%;
+  min-height: 500px;         /* กำหนดขั้นต่ำให้สูงขึ้น */
+  padding: 12px;
+  box-sizing: border-box;
+  font-family: inherit;
+  font-size: 14px;
+  resize: vertical;          /* ผู้ใช้สามารถปรับขนาดเอง */
+  border-radius: 8px;
+  background: rgba(255,255,255,0.05);
+  color: inherit;
+  margin-bottom: 8px;        /* ลดเว้นระยะให้ textarea สูงสุด */
+  overflow-y: auto;
+}
+
+
+/* ปุ่ม Save / Cancel / Edit Plan Name */
+.modal .btn-group {
+  display: flex;
+  justify-content: flex-end;   /* เรียงขวา */
+  gap: 12px;                   /* เว้นระยะระหว่างปุ่ม */
+}
+
+.modal .btn-group button {
+  min-width: 80px;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-weight: 600;
+}
+
+/* Table styling inside modal */
+#modalTableContainer table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 12px;
+  font-size: 14px;
+}
+
+#modalTableContainer th,
+#modalTableContainer td {
+  border: 1px solid rgba(255,255,255,0.1);
+  padding: 8px;
+  text-align: left;
+}
+
+/* Header row highlight */
+#modalTableContainer thead {
+  background-color: #446aff;  /* header สีน้ำเงิน */
+  color: #000;                /* ตัวอักษรสีขาว */
+}
+
+/* Zebra stripes */
+#modalTableContainer tbody tr:nth-child(even) {
+  background-color: rgba(255,255,255,0.05);
+}
+
+/* Light mode fix */
+body.light-mode #modalTableContainer th,
+body.light-mode #modalTableContainer td {
+  border: 1px solid #ddd;
+}
+
+body.light-mode #modalTableContainer thead {
+  background-color: #4f46e5; /* ม่วง-น้ำเงิน */
+  color: #fff;
+}
+
+body.light-mode #modalTableContainer tbody tr:nth-child(even) {
+  background-color: #f3f4f6;
 }

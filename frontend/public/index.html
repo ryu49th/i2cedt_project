@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="th">
+<html lang="en">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
@@ -11,11 +11,11 @@
     <header>
       <button id="toggleThemeBtn" class="theme-btn">🌙</button>
       <div class="header-container">
-      <img id="WS" src="/icons/logo.png" alt="w_S" class="logo" />
-      <div>
-        <h1>WorkSync — AI Team Work Planner</h1>
-        <div class="muted">Create a workload plan for your team by using skill/weakness data and AI recommendations.</div>
-      </div>
+        <img id="WS" src="/icons/logo.png" alt="WorkSync logo" class="logo" />
+        <div>
+          <h1>WorkSync — AI Team Work Planner</h1>
+          <div class="muted">Create a workload plan for your team using skill/weakness data and AI recommendations.</div>
+        </div>
       </div>
     </header>
 
@@ -23,13 +23,14 @@
       <!-- Projects -->
       <section class="card">
         <h3>
-        <img id="projectIcon" src="/icons/projectw.png" alt="Projects" class="icon" />
-        Projects</h3>
+          <img id="projectIcon" src="/icons/projectw.png" alt="Projects" class="icon" />
+          Projects
+        </h3>
         <div class="form">
-          <label for="projectName">Project name</label>
-          <input id="projectName" class="textbox" placeholder="e.g. WorkSync" />
+          <label for="projectName">Project Name</label>
+          <input id="projectName" class="textbox" placeholder="e.g. WorkSync Web App" />
           <label for="projectDesc">Description</label>
-          <textarea id="projectDesc" class="textarea-sm" placeholder="Description of your project"></textarea>
+          <textarea id="projectDesc" class="textarea-sm" placeholder="Brief description of your project"></textarea>
           <div class="btn-group">
             <button id="createProjectBtn" class="botton2">Create</button>
             <button id="clearStorageBtn" class="danger">Clear All</button>
@@ -43,52 +44,66 @@
       <section class="card">
         <div class="project-header">
           <div>
-            <h3 id="detailTitle">Select the project</h3>
-            <div class="muted" id="detailDesc">You haven't selected the project</div>
+            <h3 id="detailTitle">Select a Project</h3>
+            <div class="muted" id="detailDesc">No project selected</div>
           </div>
-          <div class="chip" id="membersCount">0 Member</div>
+          <div class="chip" id="membersCount">0 Members</div>
         </div>
         <hr>
         <div class="form">
-          <label>Add member</label>
-          <input id="memberName" class="textbox" placeholder="Name e.g. Min" />
-          <input id="memberSkills" class="textbox" placeholder="Good at e.g. frontend backend" />
-          <input id="memberWeakness" class="textbox" placeholder="Not good at e.g. database backend" />
+          <label>Add Member</label>
+          <input id="memberName" class="textbox" placeholder="Name e.g. John" />
+          <input id="memberSkills" class="textbox" placeholder="Skills e.g. frontend, React" />
+          <input id="memberWeakness" class="textbox" placeholder="Weaknesses e.g. database, UI" />
           <div class="btn-group">
             <button id="generatePlanBtn" class="botton2">Generate Plan (AI)</button>
-            <button id="addMemberBtn" class =botton1>Add member</button>
+            <button id="addMemberBtn" class="botton1">Add Member</button>
           </div>
         </div>
 
         <h4>
           <img id="memberIcon" src="/icons/memberw.png" alt="Members" class="icon" />
-          Member</h4>
+          Members
+        </h4>
         <div id="membersList" class="list"></div>
 
         <h4>AI Suggestion</h4>
-        <div class="plan-area" id="aiSuggestion">Press "Generate Plan (AI)" to recommend work plans</div>
+        <div class="plan-area" id="aiSuggestion">Press "Generate Plan (AI)" to get recommended work plans.</div>
       </section>
 
       <!-- Saved Plans -->
       <section class="card">
         <h3>
           <img id="planIcon" src="/icons/planw.png" alt="Plans" class="icon" />
-          Saved Plans</h3>
+          Saved Plans
+        </h3>
         <div id="plansList" class="list"></div>
         <hr>
         <div class="btn-group">
-          <button id="applyPlanBtn" class =botton2>Apply to project</button>
+          <button id="applyPlanBtn" class="botton2">Apply to Project</button>
         </div>
       </section>
     </main>
   </div>
+
   <!-- Edit Plan Modal -->
-<!-- Plan Edit Modal -->
-<div id="editPlanModal" class="modal" style="display:none;">
+  <div id="editPlanModal" class="modal" style="display:none;">
   <div class="modal-content">
     <span id="closeModal" class="close">&times;</span>
     <h3>Edit Plan</h3>
-    <textarea id="modalPlanEdit" class="textarea-sm" placeholder="แก้ไขแผนที่นี่"></textarea>
+
+    <!-- ปุ่มสลับโหมด -->
+    <div class="btn-group" style="margin-bottom: 12px;">
+      <button id="viewTextBtn" class="botton2">Text</button>
+      <button id="viewTableBtn" class="botton1">Table</button>
+    </div>
+
+    <!-- Textarea -->
+    <textarea id="modalPlanEdit" class="textarea-sm" placeholder="Edit the plan here"></textarea>
+
+    <!-- Table container -->
+    <div id="modalTableContainer" style="flex:1; overflow:auto; display:none;"></div>
+
     <div class="btn-group" style="margin-top:10px;">
       <button id="modalSaveBtn" class="botton2">Save</button>
       <button id="modalCancelBtn" class="botton1">Cancel</button>
@@ -97,6 +112,6 @@
 </div>
 
 
- <script type="module" src="scripts/main.js"></script>
+  <script type="module" src="scripts/main.js"></script>
 </body>
 </html>
