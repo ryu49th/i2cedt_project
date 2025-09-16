@@ -123,7 +123,7 @@ function renderPlans(){
 }
 
 function renderAll(){ renderProjects(); renderProjectDetail(); renderPlans(); }
-
+renderAll();
 // Actions
 createProjectBtn.onclick = ()=>{
   const name = projectsName.value.trim();
