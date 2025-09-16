@@ -56,7 +56,7 @@ const closeModal = document.getElementById('closeModal');
 // ======================
 async function fetchProjects() {
   try {
-    const resp = await fetch('http://localhost:3000/api/projects');
+    const resp = await fetch('http://34.204.10.42:3000/api/projects');
     state.projects = await resp.json();
     if (state.projects.length > 0) currentProjectId = state.projects[0]._id;
     renderAll();
@@ -91,7 +91,7 @@ function renderProjects(){
     del.classList.add('danger');
     del.onclick = async () => {
       if(!confirm('Delete this project?')) return;
-      await fetch(`http://localhost:3000/api/projects/${p._id}`, { method:'DELETE' });
+      await fetch(`http://34.204.10.42:3000/api/projects/${p._id}`, { method:'DELETE' });
       state.projects = state.projects.filter(x => x._id !== p._id);
       if(currentProjectId === p._id) currentProjectId = null;
       renderAll();
@@ -138,7 +138,7 @@ function renderProjectDetail(){
     del.classList.add('danger');
     del.onclick = async () => {
       if(!confirm('Delete this member?')) return;
-      await fetch(`http://localhost:3000/api/projects/${p._id}/members/${m._id}`, { method:'DELETE' });
+      await fetch(`http://34.204.10.42:3000/api/projects/${p._id}/members/${m._id}`, { method:'DELETE' });
       p.members = p.members.filter(x => x._id !== m._id);
       renderAll();
     };
@@ -166,7 +166,7 @@ function renderPlans() {
     del.classList.add('danger');
     del.onclick = async () => {
       try {
-        const resp = await fetch(`http://localhost:3000/api/plans/${pl._id}`, { method: 'DELETE' });
+        const resp = await fetch(`http://34.204.10.42:3000/api/plans/${pl._id}`, { method: 'DELETE' });
         if (!resp.ok) throw new Error('Failed to delete plan');
         state.plans = state.plans.filter(x => x._id !== pl._id);
         renderAll();
@@ -197,7 +197,7 @@ createProjectBtn.onclick = async () => {
   const p = { name, desc: projectsDesc.value.trim(), members: [] };
   
   try {
-    const resp = await fetch('http://localhost:3000/api/projects', {
+    const resp = await fetch('http://34.204.10.42:3000/api/projects', {
       method:'POST', 
       headers:{ 'Content-Type':'application/json' }, 
       body: JSON.stringify(p)
@@ -216,7 +216,7 @@ async function openProject(id) {
   currentProjectId = id;
 
   try {
-    const resp = await fetch(`http://localhost:3000/api/plans/${id}`);
+    const resp = await fetch(`http://34.204.10.42:3000/api/plans/${id}`);
     state.plans = await resp.json();
   } catch (err) {
     console.error("Error fetching plans", err);
@@ -241,7 +241,7 @@ addMemberBtn.onclick = async () => {
   if(!member.name) return alert('Please enter a member name');
 
   try {
-    const resp = await fetch(`http://localhost:3000/api/projects/${p._id}/members`, {
+    const resp = await fetch(`http://34.204.10.42:3000/api/projects/${p._id}/members`, {
       method:'POST',
       headers:{ 'Content-Type':'application/json' },
       body: JSON.stringify(member)
@@ -273,7 +273,7 @@ function editMember(memberId){
     weakness: weakness ? weakness.split(',').map(s => s.trim()).filter(Boolean) : m.weakness
   };
 
-  fetch(`http://localhost:3000/api/projects/${p._id}/members/${memberId}`, {
+  fetch(`http://34.204.10.42:3000/api/projects/${p._id}/members/${memberId}`, {
     method:'PUT',
     headers:{ 'Content-Type':'application/json' },
     body: JSON.stringify(updatedMember)
@@ -303,7 +303,7 @@ generatePlanBtn.onclick = async () => {
   aiSuggestion.textContent = 'Generating AI plan...';
 
   try{
-    const resp = await fetch('http://localhost:3000/api/generate', {
+    const resp = await fetch('http://34.204.10.42:3000/api/generate', {
       method:'POST',
       headers:{ 'Content-Type':'application/json' },
       body: JSON.stringify({ prompt: buildPrompt(p) })
@@ -335,7 +335,7 @@ applyPlanBtn.onclick = async () => {
   const title = `AI Plan for ${p.name}`;
 
   try {
-    const resp = await fetch("http://localhost:3000/api/plans", {
+    const resp = await fetch("http://34.204.10.42:3000/api/plans", {
       method:"POST",
       headers:{ "Content-Type":"application/json" },
       body: JSON.stringify({
@@ -445,7 +445,7 @@ toggleBtn.addEventListener("click", () => {
 clearStorageBtn.onclick = async () => {
   if (!confirm("Are you sure you want to delete all projects?")) return;
   try {
-    await fetch("http://localhost:3000/api/projects", { method: "DELETE" });
+    await fetch("http://34.204.10.42:3000/api/projects", { method: "DELETE" });
     state.projects = [];
     state.plans = [];
     currentProjectId = null;
@@ -496,7 +496,7 @@ modalSaveBtn.onclick = async () => {
   if(!updatedContent) return alert('No content to save');
 
   try{
-    const resp = await fetch(`http://localhost:3000/api/plans/${currentEditingPlan._id}`, {
+    const resp = await fetch(`http://34.204.10.42:3000/api/plans/${currentEditingPlan._id}`, {
       method:'PUT',
       headers:{ 'Content-Type':'application/json' },
       body: JSON.stringify({ content: updatedContent })

@@ -31,5 +31,5 @@ app.get('/', (req, res) => {
 app.use('/api/projects', projectRoutes);
 
 app.listen(PORT, () => {
-  console.log(`✅ Server running on http://localhost:${PORT}`);
+  console.log(`✅ Server running on http://34.204.10.42:${PORT}`);
 });
